@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "title": "Seared Duck Breast au Jus",
+    "category": "Main Course",
+    "price": "$38",
+    "description": "Crispy-skinned duck breast rested over a glossy red wine reduction, finished with thyme and fresh cracked pepper.",
+    "image": "images/duck-breast.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": true
+  },
+  {
+    "id": 2,
+    "title": "Truffle Risotto Bianco",
+    "category": "First Course",
+    "price": "$24",
+    "description": "Slow-stirred Arborio with shaved black truffle, aged Parmigiano, and a splash of dry Vermouth.",
+    "image": "images/truffle-risotto.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 3,
+    "title": "Miso-Glazed Black Cod",
+    "category": "Seafood",
+    "price": "$42",
+    "description": "Silky black cod marinated 48 hours in white miso and mirin, broiled to a caramelized lacquer finish.",
+    "image": "images/black-cod.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 4,
+    "title": "Charred Leek Soup",
+    "category": "Starter",
+    "price": "$14",
+    "description": "Fire-kissed leeks blended smooth with crème fraîche, served with a drizzle of chive oil and crispy shallots.",
+    "image": "images/leek-soup.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 5,
+    "title": "Lamb Rack Provençal",
+    "category": "Main Course",
+    "price": "$46",
+    "description": "French-trimmed lamb rack crusted in herbed breadcrumbs and Dijon, roasted to a perfect blush pink.",
+    "image": "images/lamb-rack.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 6,
+    "title": "Valrhona Chocolate Tart",
+    "category": "Dessert",
+    "price": "$16",
+    "description": "A pâte sucrée shell filled with 70% dark ganache, topped with Maldon sea salt and edible gold leaf.",
+    "image": "images/chocolate-tart.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 7,
+    "title": "Burrata & Heirloom Tomato",
+    "category": "Starter",
+    "price": "$18",
+    "description": "Hand-pulled burrata over heirloom tomatoes, dressed with aged balsamic, torn basil, and a whisper of fleur de sel.",
+    "image": "images/burrata-tomato.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 8,
+    "title": "Short Rib Braise",
+    "category": "Main Course",
+    "price": "$44",
+    "description": "72-hour braised bone-in short rib in red wine and aromatics — fork-tender, impossibly rich, deeply satisfying.",
+    "image": "images/short-rib.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  },
+  {
+    "id": 9,
+    "title": "Yuzu Posset",
+    "category": "Dessert",
+    "price": "$14",
+    "description": "A barely-set citrus cream with yuzu zest and candied kumquat — bright, clean, and deceptively simple.",
+    "image": "images/yuzu-posset.jpg",
+    "youtubeUrl": "https://www.youtube.com/@YourChannel",
+    "featured": false
+  }
+]

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="images/favicon.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="images/favicon.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="images/favicon.png" sizes="180x180">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome All! — About Me</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500&family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap" rel="stylesheet" />
+</head>
+<body data-page="about">
+
+  <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="nav-logo-mark">✦</span>
+        <span class="nav-logo-text">Tahira's Kitchen</span>
+      </div>
+      <ul class="nav-links" role="list">
+        <li><a href="index.html"   class="nav-link" data-page="about">About Me</a></li>
+        <li><a href="dishes.html"  class="nav-link" data-page="dishes">Dishes</a></li>
+        <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
+      </ul>
+      <button class="nav-hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="mobile-menu" aria-hidden="true">
+      <ul role="list">
+        <li><a href="index.html"   class="nav-mobile-link" data-page="about">About Me</a></li>
+        <li><a href="dishes.html"  class="nav-mobile-link" data-page="dishes">Dishes</a></li>
+        <li><a href="contact.html" class="nav-mobile-link" data-page="contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="logo-mark">✦</div>
+        <h1 class="site-title">I'm Glad You Made It Here.</h1>
+        <p class="site-tagline">A visual study of food &amp; craft</p>
+        <div class="header-rule"></div>
+      </div>
+    </div>
+
+    <div class="about-content">
+      <div class="about-grid">
+        <div class="about-photo-wrap">
+          <!-- Replace with: <img src="images/your-photo.jpg" alt="Tahira" class="about-photo" /> -->
+          <div class="about-photo-placeholder"><span>Your Photo Here</span></div>
+        </div>
+        <div class="about-text">
+          <p class="about-eyebrow">The Chef Behind the Lens</p>
+          <h2 class="about-heading">Hello, I'm <em>Tahira</em></h2>
+          <p class="about-body">
+            I've never made a dish I wasn't trying to make perfect. For me, cooking is equal parts sport and art. The flavors have to hit, the plate has to be beautiful,
+			and the person eating it has to feel genuinely taken care of. Eating out is a gamble. A different cook, a rushed kitchen, and suddenly the dish you loved last
+			time isn't the same. With me, it will always be the same hands, the same passion, and the same standard every single time. I created this menu for the people who
+			stay with us, because great food shouldn't mean leaving the house. Sit back, relax, and let me cook for you.
+          </p>
+          <p class="about-body">
+            Every dish I photograph is a portrait — a study in light, texture, and the quiet drama of ingredients at their peak. Each craft lives on YouTube, where you can watch it come to life from first cut to final plate.
+          </p>
+          <a href="dishes.html" class="about-cta">View the Dishes</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-mark">✦</span>
+      <p>All recipes &amp; photography by <em>Tahira's Kitchen</em></p>
+      <p class="footer-sub">Click any dish title to watch it made on YouTube</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

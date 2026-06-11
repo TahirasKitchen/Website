@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="images/favicon.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="images/favicon.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="images/favicon.png" sizes="180x180">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tahira's Kitchen — Dishes</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500&family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap" rel="stylesheet" />
+</head>
+<body data-page="dishes">
+
+  <nav class="nav" id="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="nav-logo-mark">✦</span>
+        <a href="index.html" class="nav-logo-text">Tahira's Kitchen</a>
+      </div>
+      <ul class="nav-links" role="list">
+        <li><a href="index.html"   class="nav-link" data-page="about">About Me</a></li>
+        <li><a href="dishes.html"  class="nav-link" data-page="dishes">Dishes</a></li>
+        <li><a href="contact.html" class="nav-link" data-page="contact">Contact</a></li>
+      </ul>
+      <button class="nav-hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+    <div class="nav-mobile-menu" id="mobile-menu" aria-hidden="true">
+      <ul role="list">
+        <li><a href="index.html"   class="nav-mobile-link" data-page="about">About Me</a></li>
+        <li><a href="dishes.html"  class="nav-mobile-link" data-page="dishes">Dishes</a></li>
+        <li><a href="contact.html" class="nav-mobile-link" data-page="contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <div class="section-header">
+      <p class="section-eyebrow">The Collection</p>
+      <h1 class="section-title">Portrait Dishes</h1>
+      <p class="section-sub">Click a dish title to watch how it was made in the kitchen.</p>
+      <div class="header-rule"></div>
+    </div>
+
+    <div class="gallery" id="gallery">
+      <!-- Cards injected by JS -->
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-mark">✦</span>
+      <p>All recipes &amp; photography by <em>Tahira's Kitchen</em></p>
+      <p class="footer-sub">Click any dish title to watch it made on YouTube</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
