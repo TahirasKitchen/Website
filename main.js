@@ -211,7 +211,7 @@ function handleContactSubmit(e) {
 
   const data = new FormData(form);
 
-  fetch(`https://formspree.io/f/${mdavldkv}`, {
+  fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
     method: 'POST',
     body: data,
     headers: { 'Accept': 'application/json' }
