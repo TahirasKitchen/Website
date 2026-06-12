@@ -289,7 +289,13 @@ if (GALLERY) {
     try {
       const res = await fetch('dishes.json');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      renderGallery(await res.json());
+      const dishes = await res.json();
+      // Initial full render
+      renderGallery(dishes);
+      // Hand data to filter module (runs after this block is parsed)
+      requestAnimationFrame(() => {
+        if (window._filterInit) window._filterInit(dishes);
+      });
     } catch (err) {
       console.error('Could not load dishes.json:', err);
       GALLERY.innerHTML = `<p style="color:var(--white-dim);padding:3rem;text-align:center;font-style:italic;grid-column:1/-1;">Couldn't load dishes. Make sure <code>dishes.json</code> is in the same folder.</p>`;
@@ -299,6 +305,191 @@ if (GALLERY) {
   loadGallery();
 }
 
+
+
+/* ================================================
+   FILTER & SEARCH (dishes.html only)
+   ================================================ */
+
+(function initFilterAndSearch() {
+  const filterBtn       = document.getElementById('filter-btn');
+  const filterPanel     = document.getElementById('filter-panel');
+  const filterTagList   = document.getElementById('filter-tag-list');
+  const filterApplyBtn  = document.getElementById('filter-apply-btn');
+  const filterClearBtn  = document.getElementById('filter-clear-btn');
+  const filterCount     = document.getElementById('filter-active-count');
+  const searchInput     = document.getElementById('filter-search');
+  const searchClear     = document.getElementById('filter-search-clear');
+  const resultsMsg      = document.getElementById('filter-results-msg');
+
+  if (!filterBtn) return; // not on dishes page
+
+  let allDishes    = [];   // full dataset, set after fetch
+  let activeTags   = new Set();
+  let searchQuery  = '';
+  let panelOpen    = false;
+
+  // ---- Expose a hook so loadGallery can hand off the data ----
+  window._filterInit = function(dishes) {
+    allDishes = dishes;
+    buildTagList(dishes);
+  };
+
+  window._filterApply = applyFilters; // called after render too
+
+  // ---- Build tag checkboxes from all tags in the dataset ----
+  function buildTagList(dishes) {
+    const allTags = [...new Set(dishes.flatMap(d => d.tags || []))].sort();
+    filterTagList.innerHTML = '';
+    allTags.forEach(tag => {
+      const li = document.createElement('li');
+      li.className = 'filter-tag-item';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'tag-' + tag.replace(/\s+/g, '-').toLowerCase();
+      cb.value = tag;
+      if (activeTags.has(tag)) cb.checked = true;
+
+      const lbl = document.createElement('label');
+      lbl.htmlFor = cb.id;
+      lbl.textContent = tag;
+
+      li.appendChild(cb);
+      li.appendChild(lbl);
+      filterTagList.appendChild(li);
+    });
+  }
+
+  // ---- Open / close panel ----
+  function openPanel() {
+    panelOpen = true;
+    filterPanel.classList.add('open');
+    filterPanel.setAttribute('aria-hidden', 'false');
+    filterBtn.setAttribute('aria-expanded', 'true');
+    filterBtn.classList.add('active');
+  }
+
+  function closePanel() {
+    panelOpen = false;
+    filterPanel.classList.remove('open');
+    filterPanel.setAttribute('aria-hidden', 'true');
+    filterBtn.setAttribute('aria-expanded', 'false');
+    if (activeTags.size === 0) filterBtn.classList.remove('active');
+  }
+
+  filterBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    panelOpen ? closePanel() : openPanel();
+  });
+
+  document.addEventListener('click', e => {
+    if (panelOpen && !e.target.closest('#filter-dropdown-wrap')) closePanel();
+  });
+
+  // ---- Apply button ----
+  filterApplyBtn.addEventListener('click', () => {
+    activeTags.clear();
+    filterTagList.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+      activeTags.add(cb.value);
+    });
+    updateCountBadge();
+    applyFilters();
+    closePanel();
+  });
+
+  // ---- Clear button ----
+  filterClearBtn.addEventListener('click', () => {
+    activeTags.clear();
+    filterTagList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    updateCountBadge();
+    applyFilters();
+  });
+
+  // ---- Search input ----
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value.trim().toLowerCase();
+    searchClear.hidden = searchQuery.length === 0;
+    applyFilters();
+  });
+
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchQuery = '';
+    searchClear.hidden = true;
+    searchInput.focus();
+    applyFilters();
+  });
+
+  // ---- Count badge on Filter button ----
+  function updateCountBadge() {
+    if (activeTags.size > 0) {
+      filterCount.textContent = activeTags.size;
+      filterCount.classList.add('visible');
+      filterBtn.classList.add('active');
+    } else {
+      filterCount.textContent = '';
+      filterCount.classList.remove('visible');
+      filterBtn.classList.remove('active');
+    }
+  }
+
+  // ---- Core filter logic ----
+  function applyFilters() {
+    if (!allDishes.length) return;
+
+    let results = allDishes;
+
+    // Tag filter: dish must have ALL active tags
+    if (activeTags.size > 0) {
+      results = results.filter(dish =>
+        [...activeTags].every(tag => (dish.tags || []).includes(tag))
+      );
+    }
+
+    // Search filter: match title, description, category, or tags
+    if (searchQuery) {
+      results = results.filter(dish => {
+        const haystack = [
+          dish.title,
+          dish.description,
+          dish.category,
+          ...(dish.tags || [])
+        ].join(' ').toLowerCase();
+        return haystack.includes(searchQuery);
+      });
+    }
+
+    renderFiltered(results);
+  }
+
+  // ---- Re-render gallery with filtered subset ----
+  function renderFiltered(dishes) {
+    // Use the global GALLERY and createCard already set up in the gallery block
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
+
+    if (dishes.length === 0) {
+      const msg = document.createElement('p');
+      msg.className = 'gallery-empty-msg';
+      msg.textContent = 'No dishes match your current filters.';
+      gallery.appendChild(msg);
+      resultsMsg.textContent = '';
+      return;
+    }
+
+    dishes.forEach((dish, i) => gallery.appendChild(createCard(dish, i)));
+    requestAnimationFrame(() => requestAnimationFrame(initScrollReveal));
+
+    // Results message only when filtered
+    const total = allDishes.length;
+    if (activeTags.size > 0 || searchQuery) {
+      resultsMsg.textContent = `Showing ${dishes.length} of ${total} dish${total !== 1 ? 'es' : ''}`;
+    } else {
+      resultsMsg.textContent = '';
+    }
+  }
+})();
 
 /* ================================================
    CONTACT FORM (contact.html only)
