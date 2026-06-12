@@ -221,12 +221,12 @@ function handleContactSubmit(e) {
       note.textContent = '✦ Thank you — your message has been received.';
       form.reset();
     } else {
-      note.textContent = 'Something went wrong. Please email us directly at tahiraskitchen2026@gmail.com';
+      note.textContent = 'Something went wrong. Please email us directly at TahirasKitchen2026@gmail.com';
       note.style.color = '#e88';
     }
   })
   .catch(() => {
-    note.textContent = 'Could not send. Please email us directly at tahiraskitchen2026@gmail.com';
+    note.textContent = 'Could not send. Please email us directly at TahirasKitchen2026@gmail.com';
     note.style.color = '#e88';
   })
   .finally(() => {
