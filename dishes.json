@@ -6,8 +6,9 @@
     "price": "$38",
     "description": "Crispy-skinned duck breast rested over a glossy red wine reduction, finished with thyme and fresh cracked pepper.",
     "image": "images/duck-breast.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": true
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": true,
+    "ingredients": ["Duck breast", "Red wine", "Fresh thyme", "Shallots", "Unsalted butter", "Garlic", "Black pepper", "Fleur de sel"]
   },
   {
     "id": 2,
@@ -16,8 +17,9 @@
     "price": "$24",
     "description": "Slow-stirred Arborio with shaved black truffle, aged Parmigiano, and a splash of dry Vermouth.",
     "image": "images/truffle-risotto.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Arborio rice", "Black truffle", "Aged Parmigiano Reggiano", "Dry Vermouth", "White onion", "Vegetable stock", "Unsalted butter", "Olive oil", "Sea salt"]
   },
   {
     "id": 3,
@@ -26,8 +28,9 @@
     "price": "$42",
     "description": "Silky black cod marinated 48 hours in white miso and mirin, broiled to a caramelized lacquer finish.",
     "image": "images/black-cod.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Black cod fillet", "White miso paste", "Mirin", "Sake", "Sugar", "Sesame oil", "Scallions", "Pickled ginger"]
   },
   {
     "id": 4,
@@ -36,8 +39,9 @@
     "price": "$14",
     "description": "Fire-kissed leeks blended smooth with crème fraîche, served with a drizzle of chive oil and crispy shallots.",
     "image": "images/leek-soup.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Leeks", "Crème fraîche", "Chive oil", "Shallots", "Vegetable stock", "Unsalted butter", "White pepper", "Sea salt"]
   },
   {
     "id": 5,
@@ -46,8 +50,9 @@
     "price": "$46",
     "description": "French-trimmed lamb rack crusted in herbed breadcrumbs and Dijon, roasted to a perfect blush pink.",
     "image": "images/lamb-rack.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Lamb rack", "Dijon mustard", "Panko breadcrumbs", "Fresh rosemary", "Fresh thyme", "Garlic", "Olive oil", "Fleur de sel", "Black pepper"]
   },
   {
     "id": 6,
@@ -56,8 +61,9 @@
     "price": "$16",
     "description": "A pâte sucrée shell filled with 70% dark ganache, topped with Maldon sea salt and edible gold leaf.",
     "image": "images/chocolate-tart.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Valrhona 70% dark chocolate", "Heavy cream", "Unsalted butter", "Pâte sucrée shell", "Maldon sea salt", "Edible gold leaf", "Egg yolks", "Vanilla bean"]
   },
   {
     "id": 7,
@@ -66,8 +72,9 @@
     "price": "$18",
     "description": "Hand-pulled burrata over heirloom tomatoes, dressed with aged balsamic, torn basil, and a whisper of fleur de sel.",
     "image": "images/burrata-tomato.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Fresh burrata", "Heirloom tomatoes", "Aged balsamic vinegar", "Fresh basil", "Extra-virgin olive oil", "Fleur de sel", "Black pepper"]
   },
   {
     "id": 8,
@@ -76,8 +83,9 @@
     "price": "$44",
     "description": "72-hour braised bone-in short rib in red wine and aromatics — fork-tender, impossibly rich, deeply satisfying.",
     "image": "images/short-rib.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Bone-in short rib", "Red wine", "Beef stock", "Carrots", "Celery", "White onion", "Garlic", "Tomato paste", "Fresh thyme", "Bay leaves", "Black pepper"]
   },
   {
     "id": 9,
@@ -86,7 +94,8 @@
     "price": "$14",
     "description": "A barely-set citrus cream with yuzu zest and candied kumquat — bright, clean, and deceptively simple.",
     "image": "images/yuzu-posset.jpg",
-    "youtubeUrl": "https://www.youtube.com/@YourChannel",
-    "featured": false
+    "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
+    "featured": false,
+    "ingredients": ["Heavy cream", "Yuzu juice", "Yuzu zest", "Caster sugar", "Candied kumquat", "Edible flowers"]
   }
 ]
