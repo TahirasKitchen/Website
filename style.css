@@ -467,6 +467,24 @@ ul[role="list"] { list-style: none; }
   filter: grayscale(20%) brightness(0.85);
 }
 
+.card-number-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gold-bright);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  padding: 0.2rem 0.5rem;
+  pointer-events: none;
+  z-index: 2;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
 .card:hover .card-image img {
   transform: scale(1.06);
   filter: grayscale(0%) brightness(0.75);
