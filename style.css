@@ -548,26 +548,6 @@ ul[role="list"] { list-style: none; }
 
 .card:hover .card-description { max-height: 80px; opacity: 1; }
 
-.card-watch {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-top: 0.9rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--gold);
-  font-weight: 500;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.35s ease 0.15s, transform 0.35s ease 0.15s;
-}
-
-.card:hover .card-watch { opacity: 1; transform: translateY(0); }
-.card-watch svg { flex-shrink: 0; }
-
-.card.featured { grid-column: span 2; aspect-ratio: 16 / 9; }
-
 .card-image-fallback {
   position: absolute;
   inset: 0;
@@ -703,13 +683,24 @@ ul[role="list"] { list-style: none; }
   opacity: 0.7;
 }
 
-/* "Ingredient List" trigger button */
+/* Actions container: stacks vertically on desktop, side-by-side on mobile */
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.85rem;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease 0.1s, transform 0.35s ease 0.1s;
+}
+
+.card:hover .card-actions { opacity: 1; transform: translateY(0); }
+
+/* Ingredient List button */
 .card-ingredients-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  margin-top: 0.6rem;
-  margin-bottom: 0;
   font-size: 0.72rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -720,18 +711,24 @@ ul[role="list"] { list-style: none; }
   cursor: pointer;
   padding: 0;
   font-family: var(--font-body);
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.35s ease 0.1s, transform 0.35s ease 0.1s, color 0.25s ease;
+  transition: color 0.25s ease;
 }
 
-.card:hover .card-ingredients-btn { opacity: 1; transform: translateY(0); }
 .card-ingredients-btn:hover { color: var(--gold-bright); }
 
-/* On mobile: always visible */
-@media (max-width: 640px) {
-  .card-ingredients-btn { opacity: 1; transform: none; }
+/* Watch on YouTube link */
+.card-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
 }
+
+.card-watch svg { flex-shrink: 0; }
 
 
 /* ================================================
@@ -1021,12 +1018,25 @@ ul[role="list"] { list-style: none; }
 
   /* ---- Gallery ---- */
   .gallery { gap: 1px; padding: 0 1px 4rem; }
-  .card.featured { grid-column: span 1; aspect-ratio: 4 / 5; }
   .card-content { padding: 1.25rem 1.1rem 1.1rem; }
+
+  /* Always show card actions on mobile (no hover) */
+  .card-actions {
+    opacity: 1;
+    transform: none;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .card-ingredients-btn { text-align: left; }
+  .card-watch { text-align: right; margin-left: auto; }
 
   /* Always show card info on mobile (no hover) */
   .card-description { max-height: 60px; opacity: 0.85; }
-  .card-category, .card-watch { opacity: 1; transform: none; }
+  .card-category { opacity: 1; transform: none; }
 
   /* ---- Contact ---- */
   .contact-wrap { padding: 0 1.25rem 5rem; }
