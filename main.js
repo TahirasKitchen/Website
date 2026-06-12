@@ -67,14 +67,16 @@ if (GALLERY) {
       <polygon points="2,1 9,5 2,9" fill="currentColor"/>
     </svg>`;
 
-  function createCard(dish, index) {
-    const card = document.createElement('article');
-    card.className = 'card' + (dish.featured ? ' featured' : '');
-    card.style.transitionDelay = `${Math.min(index * 80, 600)}ms`;
+  const LIST_ICON = `
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <line x1="1" y1="2.5" x2="9" y2="2.5" stroke="currentColor" stroke-width="1.2"/>
+      <line x1="1" y1="5"   x2="9" y2="5"   stroke="currentColor" stroke-width="1.2"/>
+      <line x1="1" y1="7.5" x2="9" y2="7.5" stroke="currentColor" stroke-width="1.2"/>
+    </svg>`;
 
+  function buildImageWrap(dish, index) {
     const imageWrap = document.createElement('div');
     imageWrap.className = 'card-image';
-
     if (dish.image) {
       const img = document.createElement('img');
       img.src = dish.image;
@@ -95,9 +97,18 @@ if (GALLERY) {
       fb.textContent = '🍽';
       imageWrap.appendChild(fb);
     }
+    return imageWrap;
+  }
+
+  function buildCardFront(dish, index) {
+    const front = document.createElement('div');
+    front.className = 'card-front';
+
+    front.appendChild(buildImageWrap(dish, index));
 
     const overlay = document.createElement('div');
     overlay.className = 'card-overlay';
+    front.appendChild(overlay);
 
     const content = document.createElement('div');
     content.className = 'card-content';
@@ -114,13 +125,9 @@ if (GALLERY) {
 
     const titleEl = document.createElement('h2');
     titleEl.className = 'card-title';
-    const titleLink = document.createElement('a');
-    titleLink.href = dish.youtubeUrl;
-    titleLink.textContent = dish.title;
-    titleLink.target = '_blank';
-    titleLink.rel = 'noopener noreferrer';
-    titleLink.setAttribute('aria-label', `Watch "${dish.title}" on YouTube`);
-    titleEl.appendChild(titleLink);
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = dish.title;
+    titleEl.appendChild(titleSpan);
     titleRow.appendChild(titleEl);
 
     if (dish.price) {
@@ -139,6 +146,20 @@ if (GALLERY) {
       content.appendChild(desc);
     }
 
+    // Ingredient List button (above Watch on YouTube)
+    if (dish.ingredients && dish.ingredients.length) {
+      const ingBtn = document.createElement('button');
+      ingBtn.className = 'card-ingredients-btn';
+      ingBtn.innerHTML = `${LIST_ICON} Ingredient List`;
+      ingBtn.setAttribute('aria-label', `View ingredients for ${dish.title}`);
+      ingBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const card = ingBtn.closest('.card');
+        card.classList.add('flipped');
+      });
+      content.appendChild(ingBtn);
+    }
+
     const watchLabel = document.createElement('a');
     watchLabel.className = 'card-watch';
     watchLabel.href = dish.youtubeUrl;
@@ -148,23 +169,99 @@ if (GALLERY) {
     watchLabel.innerHTML = `${PLAY_ICON} Watch on YouTube`;
     content.appendChild(watchLabel);
 
-    card.appendChild(imageWrap);
-    card.appendChild(overlay);
-    card.appendChild(content);
+    front.appendChild(content);
+    return front;
+  }
+
+  function buildCardBack(dish) {
+    const back = document.createElement('div');
+    back.className = 'card-back';
+    back.setAttribute('aria-hidden', 'true');
+
+    const header = document.createElement('div');
+    header.className = 'card-back-header';
+
+    const titleEl = document.createElement('p');
+    titleEl.className = 'card-back-title';
+    titleEl.textContent = dish.title;
+    header.appendChild(titleEl);
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'card-back-close';
+    closeBtn.innerHTML = '✕';
+    closeBtn.setAttribute('aria-label', 'Close ingredient list');
+    closeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const card = closeBtn.closest('.card');
+      card.classList.remove('flipped');
+    });
+    header.appendChild(closeBtn);
+    back.appendChild(header);
+
+    const eyebrow = document.createElement('p');
+    eyebrow.className = 'card-back-eyebrow';
+    eyebrow.textContent = 'What goes into it';
+    back.appendChild(eyebrow);
+
+    const list = document.createElement('ul');
+    list.className = 'card-ingredients';
+    (dish.ingredients || []).forEach(ing => {
+      const li = document.createElement('li');
+      li.textContent = ing;
+      list.appendChild(li);
+    });
+    back.appendChild(list);
+
+    return back;
+  }
+
+  function createCard(dish, index) {
+    const card = document.createElement('article');
+    card.className = 'card' + (dish.featured ? ' featured' : '');
+    card.style.transitionDelay = `${Math.min(index * 80, 600)}ms`;
+
+    // Flip wrapper
+    const flipWrapper = document.createElement('div');
+    flipWrapper.className = 'card-flip-wrapper';
+
+    const flipInner = document.createElement('div');
+    flipInner.className = 'card-flip-inner';
+
+    flipInner.appendChild(buildCardFront(dish, index));
+    flipInner.appendChild(buildCardBack(dish));
+
+    flipWrapper.appendChild(flipInner);
+    card.appendChild(flipWrapper);
+
     return card;
   }
 
   function initScrollReveal() {
-    const observer = new IntersectionObserver(
+    // Reveal observer
+    const revealObserver = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('visible');
-          observer.unobserve(e.target);
+          revealObserver.unobserve(e.target);
         }
       }),
       { threshold: 0.08 }
     );
-    document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+    // Scroll-to-unflip observer — fires when card scrolls mostly out of view
+    const unflipObserver = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (!e.isIntersecting) {
+          e.target.classList.remove('flipped');
+        }
+      }),
+      { threshold: 0.15 }
+    );
+
+    document.querySelectorAll('.card').forEach(c => {
+      revealObserver.observe(c);
+      unflipObserver.observe(c);
+    });
   }
 
   function renderGallery(dishes) {
