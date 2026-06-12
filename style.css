@@ -1324,10 +1324,22 @@ ul[role="list"] { list-style: none; }
     order: 2; /* filter button below search */
   }
 
+  .filter-left,
+  .filter-dropdown-wrap {
+    width: 100%;
+  }
+
+  .filter-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
   .filter-panel {
     left: 0;
     right: 0;
+    width: 100%;
     min-width: unset;
+    box-sizing: border-box;
   }
 
   /* ---- Gallery ---- */
