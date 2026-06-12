@@ -8,6 +8,7 @@
     "image": "images/duck-breast.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Meat", "Gluten-Free", "Dairy-Free", "High Protein"],
     "ingredients": ["Duck breast", "Red wine", "Fresh thyme", "Shallots", "Unsalted butter", "Garlic", "Black pepper", "Fleur de sel"]
   },
   {
@@ -19,6 +20,7 @@
     "image": "images/truffle-risotto.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Vegetarian", "Contains Dairy", "Comfort Food"],
     "ingredients": ["Arborio rice", "Black truffle", "Aged Parmigiano Reggiano", "Dry Vermouth", "White onion", "Vegetable stock", "Unsalted butter", "Olive oil", "Sea salt"]
   },
   {
@@ -30,6 +32,7 @@
     "image": "images/black-cod.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Seafood", "Gluten-Free", "Dairy-Free", "High Protein"],
     "ingredients": ["Black cod fillet", "White miso paste", "Mirin", "Sake", "Sugar", "Sesame oil", "Scallions", "Pickled ginger"]
   },
   {
@@ -41,6 +44,7 @@
     "image": "images/leek-soup.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Vegetarian", "Contains Dairy", "Comfort Food", "Light"],
     "ingredients": ["Leeks", "Crème fraîche", "Chive oil", "Shallots", "Vegetable stock", "Unsalted butter", "White pepper", "Sea salt"]
   },
   {
@@ -52,6 +56,7 @@
     "image": "images/lamb-rack.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Meat", "High Protein", "Contains Gluten"],
     "ingredients": ["Lamb rack", "Dijon mustard", "Panko breadcrumbs", "Fresh rosemary", "Fresh thyme", "Garlic", "Olive oil", "Fleur de sel", "Black pepper"]
   },
   {
@@ -63,6 +68,7 @@
     "image": "images/chocolate-tart.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Dessert", "Vegetarian", "Contains Dairy", "Contains Gluten"],
     "ingredients": ["Valrhona 70% dark chocolate", "Heavy cream", "Unsalted butter", "Pâte sucrée shell", "Maldon sea salt", "Edible gold leaf", "Egg yolks", "Vanilla bean"]
   },
   {
@@ -74,6 +80,7 @@
     "image": "images/burrata-tomato.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Vegetarian", "Contains Dairy", "Gluten-Free", "Light"],
     "ingredients": ["Fresh burrata", "Heirloom tomatoes", "Aged balsamic vinegar", "Fresh basil", "Extra-virgin olive oil", "Fleur de sel", "Black pepper"]
   },
   {
@@ -85,6 +92,7 @@
     "image": "images/short-rib.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Meat", "Gluten-Free", "Dairy-Free", "High Protein", "Comfort Food"],
     "ingredients": ["Bone-in short rib", "Red wine", "Beef stock", "Carrots", "Celery", "White onion", "Garlic", "Tomato paste", "Fresh thyme", "Bay leaves", "Black pepper"]
   },
   {
@@ -96,6 +104,7 @@
     "image": "images/yuzu-posset.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
     "featured": false,
+    "tags": ["Dessert", "Vegetarian", "Contains Dairy", "Gluten-Free", "Light"],
     "ingredients": ["Heavy cream", "Yuzu juice", "Yuzu zest", "Caster sugar", "Candied kumquat", "Edible flowers"]
   }
 ]
