@@ -472,7 +472,7 @@ if (GALLERY) {
     if (dishes.length === 0) {
       const msg = document.createElement('p');
       msg.className = 'gallery-empty-msg';
-      msg.textContent = 'No dishes match your current filters.';
+      msg.textContent = 'No dishes match your current search.';
       gallery.appendChild(msg);
       resultsMsg.textContent = '';
       return;
