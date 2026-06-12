@@ -146,7 +146,10 @@ if (GALLERY) {
       content.appendChild(desc);
     }
 
-    // Ingredient List button (above Watch on YouTube)
+    // Actions row: Ingredient List + Watch on YouTube
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
+
     if (dish.ingredients && dish.ingredients.length) {
       const ingBtn = document.createElement('button');
       ingBtn.className = 'card-ingredients-btn';
@@ -157,7 +160,7 @@ if (GALLERY) {
         const card = ingBtn.closest('.card');
         card.classList.add('flipped');
       });
-      content.appendChild(ingBtn);
+      actions.appendChild(ingBtn);
     }
 
     const watchLabel = document.createElement('a');
@@ -167,7 +170,9 @@ if (GALLERY) {
     watchLabel.rel = 'noopener noreferrer';
     watchLabel.setAttribute('aria-hidden', 'true');
     watchLabel.innerHTML = `${PLAY_ICON} Watch on YouTube`;
-    content.appendChild(watchLabel);
+    actions.appendChild(watchLabel);
+
+    content.appendChild(actions);
 
     front.appendChild(content);
     return front;
