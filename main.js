@@ -104,7 +104,14 @@ if (GALLERY) {
     const front = document.createElement('div');
     front.className = 'card-front';
 
-    front.appendChild(buildImageWrap(dish, index));
+   const imageWrap = buildImageWrap(dish, index);
+
+   const badge = document.createElement('span');
+   badge.className = 'card-number-badge';
+   badge.textContent = `#${index + 1}`;
+   imageWrap.appendChild(badge);
+     
+   front.appendChild(imageWrap);
 
     const overlay = document.createElement('div');
     overlay.className = 'card-overlay';
