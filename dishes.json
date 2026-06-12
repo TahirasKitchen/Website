@@ -7,7 +7,7 @@
     "description": "Crispy-skinned duck breast rested over a glossy red wine reduction, finished with thyme and fresh cracked pepper.",
     "image": "images/duck-breast.jpg",
     "youtubeUrl": "https://www.youtube.com/@TahirasKitchen2026",
-    "featured": true,
+    "featured": false,
     "ingredients": ["Duck breast", "Red wine", "Fresh thyme", "Shallots", "Unsalted butter", "Garlic", "Black pepper", "Fleur de sel"]
   },
   {
