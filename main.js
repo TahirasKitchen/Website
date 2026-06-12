@@ -242,7 +242,7 @@ if (GALLERY) {
   }
 
   function initScrollReveal() {
-    // Reveal observer
+    // Reveal observer — animate cards in as they enter the viewport
     const revealObserver = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) {
@@ -253,20 +253,26 @@ if (GALLERY) {
       { threshold: 0.08 }
     );
 
-    // Scroll-to-unflip observer — fires when card scrolls mostly out of view
-    const unflipObserver = new IntersectionObserver(
-      entries => entries.forEach(e => {
-        if (!e.isIntersecting) {
-          e.target.classList.remove('flipped');
-        }
-      }),
-      { threshold: 0.15 }
-    );
+    document.querySelectorAll('.card').forEach(c => revealObserver.observe(c));
 
-    document.querySelectorAll('.card').forEach(c => {
-      revealObserver.observe(c);
-      unflipObserver.observe(c);
-    });
+    // Scroll-to-unflip: on every scroll, check any flipped cards and revert
+    // them the moment they are no longer substantially visible.
+    let scrollTimer;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        document.querySelectorAll('.card.flipped').forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const windowH = window.innerHeight;
+          // "substantially visible" = at least 30% of the card height is on screen
+          const visiblePx = Math.min(rect.bottom, windowH) - Math.max(rect.top, 0);
+          const threshold = card.offsetHeight * 0.3;
+          if (visiblePx < threshold) {
+            card.classList.remove('flipped');
+          }
+        });
+      }, 80); // slight debounce so it doesn't fire on every pixel
+    }, { passive: true });
   }
 
   function renderGallery(dishes) {
