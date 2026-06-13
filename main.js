@@ -602,10 +602,12 @@ function handleContactSubmit(e) {
       cbWrap.appendChild(cb);
       cbWrap.appendChild(cbBox);
 
-      // Label (name + price)
+      // Label wraps cbWrap + name + price so clicking box OR name selects the dish
       const lbl = document.createElement('label');
       lbl.className = 'order-dish-label';
       lbl.htmlFor = cb.id;
+
+      lbl.appendChild(cbWrap);
 
       const nameEl = document.createElement('span');
       nameEl.className = 'order-dish-name';
@@ -646,7 +648,6 @@ function handleContactSubmit(e) {
       qtyWrap.appendChild(qtyInput);
       qtyWrap.appendChild(plusBtn);
 
-      li.appendChild(cbWrap);
       li.appendChild(lbl);
       li.appendChild(qtyWrap);
       dishList.appendChild(li);
@@ -746,8 +747,8 @@ function handleContactSubmit(e) {
 
   // ---- Edit order ----
   editBtn.addEventListener('click', () => {
-    listWrap.hidden = false;
     summary.hidden = true;
+    listWrap.hidden = false;
     hiddenField.value = '';
   });
 
