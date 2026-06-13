@@ -104,14 +104,7 @@ if (GALLERY) {
     const front = document.createElement('div');
     front.className = 'card-front';
 
-   const imageWrap = buildImageWrap(dish, index);
-
-   const badge = document.createElement('span');
-   badge.className = 'card-number-badge';
-   badge.textContent = `#${index + 1}`;
-   imageWrap.appendChild(badge);
-     
-   front.appendChild(imageWrap);
+    front.appendChild(buildImageWrap(dish, index));
 
     const overlay = document.createElement('div');
     overlay.className = 'card-overlay';
@@ -479,7 +472,7 @@ if (GALLERY) {
     if (dishes.length === 0) {
       const msg = document.createElement('p');
       msg.className = 'gallery-empty-msg';
-      msg.textContent = 'No dishes match your current search.';
+      msg.textContent = 'No dishes match your current filters.';
       gallery.appendChild(msg);
       resultsMsg.textContent = '';
       return;
@@ -511,27 +504,28 @@ function handleContactSubmit(e) {
   btn.textContent = 'Sending…';
   btn.disabled = true;
 
-  const data = new FormData(form);
-  data.append('access_key', '954e1a30-859f-419a-9e52-ee39890f1374');
-  data.append('subject', "New message — Tahira's Kitchen");
+  // Formspree handles the email delivery to tahiraskitchen2026@gmail.com
+  // Replace YOUR_FORM_ID below with the ID from your Formspree dashboard (see setup steps)
+  const FORMSPREE_ID = 'mdavldkv';
 
-  fetch('https://api.web3forms.com/submit', {
+  const data = new FormData(form);
+
+  fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
     method: 'POST',
     body: data,
     headers: { 'Accept': 'application/json' }
   })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
+  .then(res => {
+    if (res.ok) {
       note.textContent = '✦ Thank you — your message has been received.';
       form.reset();
     } else {
-      note.textContent = 'Something went wrong. Please email me directly at TahirasKitchen2026@gmail.com';
+      note.textContent = 'Something went wrong. Please email us directly at TahirasKitchen2026@gmail.com';
       note.style.color = '#e88';
     }
   })
   .catch(() => {
-    note.textContent = 'Could not send. Please email me directly at TahirasKitchen2026@gmail.com';
+    note.textContent = 'Could not send. Please email us directly at TahirasKitchen2026@gmail.com';
     note.style.color = '#e88';
   })
   .finally(() => {
@@ -539,3 +533,233 @@ function handleContactSubmit(e) {
     btn.disabled = false;
   });
 }
+
+/* ================================================
+   CONTACT — FOOD ORDER PANEL (contact.html only)
+   ================================================ */
+
+(function initOrderPanel() {
+  const toggle       = document.getElementById('order-toggle');
+  if (!toggle) return; // not on contact page
+
+  const panel        = document.getElementById('order-panel');
+  const dishList     = document.getElementById('order-dish-list');
+  const totalEl      = document.getElementById('order-total-value');
+  const finishBtn    = document.getElementById('order-finish-btn');
+  const listWrap     = document.getElementById('order-list-wrap');
+  const summary      = document.getElementById('order-summary');
+  const summaryLines = document.getElementById('order-summary-lines');
+  const summaryTotal = document.getElementById('order-summary-total');
+  const editBtn      = document.getElementById('order-edit-btn');
+  const hiddenField  = document.getElementById('food-order-hidden');
+
+  let dishes = [];      // loaded from dishes.json
+  let orderMap = {};    // { id: { dish, qty } }
+
+  // ---- Load dishes from existing dishes.json ----
+  fetch('dishes.json')
+    .then(r => r.json())
+    .then(data => { dishes = data; buildDishList(); })
+    .catch(() => {
+      dishList.innerHTML = '<li style="padding:1rem;color:var(--white-dim);font-size:0.82rem;font-style:italic;">Could not load menu.</li>';
+    });
+
+  // ---- Toggle panel open/close ----
+  toggle.addEventListener('change', () => {
+    if (toggle.checked) {
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden', 'false');
+    } else {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+      // Reset order on uncheck
+      resetOrder();
+    }
+  });
+
+  // ---- Build dish rows ----
+  function buildDishList() {
+    dishList.innerHTML = '';
+    dishes.forEach(dish => {
+      const price = parseFloat((dish.price || '$0').replace(/[^0-9.]/g, '')) || 0;
+      const li = document.createElement('li');
+      li.className = 'order-dish-item';
+      li.dataset.id = dish.id;
+
+      // Checkbox
+      const cbWrap = document.createElement('span');
+      cbWrap.className = 'order-dish-cb-wrap';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.className = 'order-dish-cb';
+      cb.id = `odish-${dish.id}`;
+      cb.dataset.price = price;
+
+      const cbBox = document.createElement('span');
+      cbBox.className = 'order-dish-cb-box';
+
+      cbWrap.appendChild(cb);
+      cbWrap.appendChild(cbBox);
+
+      // Label (name + price)
+      const lbl = document.createElement('label');
+      lbl.className = 'order-dish-label';
+      lbl.htmlFor = cb.id;
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'order-dish-name';
+      nameEl.textContent = dish.title;
+
+      const priceEl = document.createElement('span');
+      priceEl.className = 'order-dish-price';
+      priceEl.textContent = dish.price || '';
+
+      lbl.appendChild(nameEl);
+      lbl.appendChild(priceEl);
+
+      // Qty controls
+      const qtyWrap = document.createElement('span');
+      qtyWrap.className = 'order-qty-wrap';
+
+      const minusBtn = document.createElement('button');
+      minusBtn.type = 'button';
+      minusBtn.className = 'order-qty-btn';
+      minusBtn.textContent = '−';
+      minusBtn.setAttribute('aria-label', 'Decrease quantity');
+
+      const qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.className = 'order-qty-input';
+      qtyInput.value = 1;
+      qtyInput.min = 1;
+      qtyInput.max = 20;
+      qtyInput.setAttribute('aria-label', 'Quantity');
+
+      const plusBtn = document.createElement('button');
+      plusBtn.type = 'button';
+      plusBtn.className = 'order-qty-btn';
+      plusBtn.textContent = '+';
+      plusBtn.setAttribute('aria-label', 'Increase quantity');
+
+      qtyWrap.appendChild(minusBtn);
+      qtyWrap.appendChild(qtyInput);
+      qtyWrap.appendChild(plusBtn);
+
+      li.appendChild(cbWrap);
+      li.appendChild(lbl);
+      li.appendChild(qtyWrap);
+      dishList.appendChild(li);
+
+      // ---- Events ----
+      cb.addEventListener('change', () => {
+        if (cb.checked) {
+          orderMap[dish.id] = { dish, qty: parseInt(qtyInput.value) || 1 };
+        } else {
+          delete orderMap[dish.id];
+          qtyInput.value = 1;
+        }
+        updateTotal();
+      });
+
+      qtyInput.addEventListener('input', () => {
+        let v = parseInt(qtyInput.value) || 1;
+        if (v < 1) v = 1;
+        if (v > 20) v = 20;
+        qtyInput.value = v;
+        if (cb.checked) {
+          orderMap[dish.id] = { dish, qty: v };
+          updateTotal();
+        }
+      });
+
+      minusBtn.addEventListener('click', () => {
+        let v = parseInt(qtyInput.value) || 1;
+        if (v > 1) { qtyInput.value = v - 1; qtyInput.dispatchEvent(new Event('input')); }
+      });
+
+      plusBtn.addEventListener('click', () => {
+        let v = parseInt(qtyInput.value) || 1;
+        if (v < 20) { qtyInput.value = v + 1; qtyInput.dispatchEvent(new Event('input')); }
+      });
+    });
+  }
+
+  // ---- Running total ----
+  function updateTotal() {
+    const total = Object.values(orderMap).reduce((sum, { dish, qty }) => {
+      const p = parseFloat((dish.price || '0').replace(/[^0-9.]/g, '')) || 0;
+      return sum + p * qty;
+    }, 0);
+    totalEl.textContent = `$${total.toFixed(2)}`;
+  }
+
+  // ---- Finish order ----
+  finishBtn.addEventListener('click', () => {
+    if (Object.keys(orderMap).length === 0) {
+      finishBtn.textContent = 'Select at least one dish';
+      setTimeout(() => { finishBtn.textContent = 'Finish Order'; }, 2000);
+      return;
+    }
+    showSummary();
+  });
+
+  function showSummary() {
+    summaryLines.innerHTML = '';
+    let total = 0;
+
+    Object.values(orderMap).forEach(({ dish, qty }) => {
+      const price = parseFloat((dish.price || '0').replace(/[^0-9.]/g, '')) || 0;
+      const lineTotal = price * qty;
+      total += lineTotal;
+
+      const row = document.createElement('div');
+      row.className = 'order-summary-line';
+
+      const namePart = document.createElement('span');
+      namePart.className = 'order-summary-line-name';
+      namePart.textContent = qty > 1 ? `${dish.title} × ${qty}` : dish.title;
+
+      const pricePart = document.createElement('span');
+      pricePart.className = 'order-summary-line-price';
+      pricePart.textContent = `$${lineTotal.toFixed(2)}`;
+
+      row.appendChild(namePart);
+      row.appendChild(pricePart);
+      summaryLines.appendChild(row);
+    });
+
+    summaryTotal.textContent = `$${total.toFixed(2)}`;
+
+    // Build hidden field value for email
+    const orderText = Object.values(orderMap)
+      .map(({ dish, qty }) => {
+        const p = parseFloat((dish.price || '0').replace(/[^0-9.]/g, '')) || 0;
+        return `${dish.title}${qty > 1 ? ` x${qty}` : ''} — $${(p * qty).toFixed(2)}`;
+      })
+      .join('; ') + ` | TOTAL: $${total.toFixed(2)}`;
+    hiddenField.value = orderText;
+
+    listWrap.hidden = true;
+    summary.hidden = false;
+  }
+
+  // ---- Edit order ----
+  editBtn.addEventListener('click', () => {
+    listWrap.hidden = false;
+    summary.hidden = true;
+    hiddenField.value = '';
+  });
+
+  function resetOrder() {
+    orderMap = {};
+    hiddenField.value = '';
+    listWrap.hidden = false;
+    summary.hidden = true;
+    // Uncheck all and reset qty
+    dishList.querySelectorAll('.order-dish-cb').forEach(cb => { cb.checked = false; });
+    dishList.querySelectorAll('.order-qty-input').forEach(inp => { inp.value = 1; });
+    totalEl.textContent = '$0';
+  }
+
+})();
