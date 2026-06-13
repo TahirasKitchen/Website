@@ -63,10 +63,60 @@
             <input type="text" id="contact-airbnb" name="airbnb_code" placeholder="e.g. HMAW4KANYD" />
           </div>
         </div>
+        <!-- Food order toggle -->
+        <div class="form-field order-toggle-field">
+          <label class="order-toggle-label">
+            <span class="order-toggle-checkbox-wrap">
+              <input type="checkbox" id="order-toggle" class="order-toggle-input" />
+              <span class="order-toggle-box"></span>
+            </span>
+            I want to request food during my stay
+          </label>
+        </div>
+
+        <!-- Order panel (hidden until checkbox checked) -->
+        <div class="order-panel" id="order-panel" aria-hidden="true">
+
+          <!-- Dish list -->
+          <div class="order-list-wrap" id="order-list-wrap">
+            <p class="order-list-eyebrow">Select your dishes</p>
+            <ul class="order-dish-list" id="order-dish-list">
+              <!-- Injected by JS from dishes.json -->
+            </ul>
+            <div class="order-footer">
+              <div class="order-total-wrap">
+                <span class="order-total-label">Estimated Total</span>
+                <span class="order-total-value" id="order-total-value">$0</span>
+              </div>
+              <button type="button" class="order-finish-btn" id="order-finish-btn">Finish Order</button>
+            </div>
+          </div>
+
+          <!-- Order summary (shown after Finish) -->
+          <div class="order-summary" id="order-summary" hidden>
+            <div class="order-summary-inner">
+              <div class="order-summary-lines" id="order-summary-lines"></div>
+              <div class="order-summary-total-row">
+                <span class="order-summary-total-label">Total</span>
+                <span class="order-summary-total-value" id="order-summary-total"></span>
+              </div>
+            </div>
+            <button type="button" class="order-edit-btn" id="order-edit-btn">
+              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M7.5 1.5 9.5 3.5 3.5 9.5H1.5V7.5L7.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+              </svg>
+              Edit Order
+            </button>
+          </div>
+
+          <!-- Hidden field: order injected into email -->
+          <input type="hidden" name="food_order" id="food-order-hidden" />
+        </div>
+
         <div class="form-field">
           <label for="contact-message">
             Message
-            <span class="form-field-hint">Please mention the dish numbers if you are requesting food to be prepared during your AirBNB stay.</span>
+            <span class="form-field-hint">Any additional notes, dietary restrictions, or special requests?</span>
           </label>
           <textarea id="contact-message" name="message" rows="5" placeholder="What's on your mind?" required></textarea>
         </div>
@@ -79,7 +129,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>
           YouTube Channel
         </a>
-        <a href="mailto:tahiraskitchen2026@gmail.com" class="contact-social">
+        <a href="mailto:TahirasKitchen2026@gmail.com" class="contact-social">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
           TahirasKitchen2026@gmail.com
         </a>
@@ -93,13 +143,13 @@
       <p>All dishes &amp; photography by <em>Tahira's Kitchen 2026</em></p>
       <div class="footer-social">
         <a href="https://www.tiktok.com/@Tahi.t1" target="_blank" rel="noopener noreferrer" class="footer-social-link" aria-label="TikTok">
-          <img src="images/tiktok.png" alt="TikTok" class="footer-social-icon" />
+          <img src="images/tiktok.ico" alt="TikTok" class="footer-social-icon" />
         </a>
         <a href="https://www.youtube.com/@TahirasKitchen2026" target="_blank" rel="noopener noreferrer" class="footer-social-link" aria-label="YouTube">
-          <img src="images/youtube.png" alt="YouTube" class="footer-social-icon" />
+          <img src="images/youtube.ico" alt="YouTube" class="footer-social-icon" />
         </a>
         <a href="https://www.airbnb.com/rooms/YourListingID" target="_blank" rel="noopener noreferrer" class="footer-social-link" aria-label="Airbnb">
-          <img src="images/airbnb.png" alt="Airbnb" class="footer-social-icon" />
+          <img src="images/airbnb.ico" alt="Airbnb" class="footer-social-icon" />
         </a>
       </div>
     </div>
