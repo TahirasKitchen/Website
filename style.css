@@ -1334,6 +1334,11 @@ ul[role="list"] { list-style: none; }
 }
 
 /* Summary (post-finish) */
+.order-summary[hidden],
+.order-list-wrap[hidden] {
+  display: none !important;
+}
+
 .order-summary {
   border: 1px solid rgba(201,168,76,0.18);
   background: rgba(0,0,0,0.25);
