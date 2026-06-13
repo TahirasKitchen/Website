@@ -567,12 +567,12 @@ function handleContactSubmit(e) {
   // ---- Toggle panel open/close ----
   toggle.addEventListener('change', () => {
     if (toggle.checked) {
+      resetOrder(); // always start fresh when opening
       panel.classList.add('open');
       panel.setAttribute('aria-hidden', 'false');
     } else {
       panel.classList.remove('open');
       panel.setAttribute('aria-hidden', 'true');
-      // Reset order on uncheck
       resetOrder();
     }
   });
