@@ -1191,9 +1191,14 @@ ul[role="list"] { list-style: none; }
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  justify-content: flex-start;
+  gap: 0.75rem;
   min-width: 0;
+  user-select: none;
+}
+
+.order-dish-label .order-dish-price {
+  margin-left: auto;
 }
 
 .order-dish-name {
@@ -1207,6 +1212,10 @@ ul[role="list"] { list-style: none; }
 }
 
 .order-dish-item:has(.order-dish-cb:checked) .order-dish-name {
+  color: var(--white);
+}
+
+.order-dish-item:has(.order-dish-cb:checked) .order-dish-label {
   color: var(--white);
 }
 
