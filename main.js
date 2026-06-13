@@ -504,19 +504,18 @@ function handleContactSubmit(e) {
   btn.textContent = 'Sending…';
   btn.disabled = true;
 
-  // Formspree handles the email delivery to tahiraskitchen2026@gmail.com
-  // Replace YOUR_FORM_ID below with the ID from your Formspree dashboard (see setup steps)
-  const FORMSPREE_ID = 'mdavldkv';
-
   const data = new FormData(form);
+  data.append('access_key', '954e1a30-859f-419a-9e52-ee39890f1374');
+  data.append('subject', "New message — Tahira's Kitchen");
 
-  fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+  fetch('https://api.web3forms.com/submit', {
     method: 'POST',
     body: data,
     headers: { 'Accept': 'application/json' }
   })
-  .then(res => {
-    if (res.ok) {
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
       note.textContent = '✦ Thank you — your message has been received.';
       form.reset();
     } else {
