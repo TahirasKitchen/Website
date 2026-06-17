@@ -1544,6 +1544,10 @@ ul[role="list"] { list-style: none; }
   min-height: 1.2em;
 }
 
+.contact-links-centered {
+  justify-content: center;
+}
+
 .contact-links {
   display: flex;
   justify-content: center;
