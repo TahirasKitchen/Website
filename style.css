@@ -1431,6 +1431,244 @@ ul[role="list"] { list-style: none; }
   border-color: var(--gold);
 }
 
+
+/* ── Date picker step ─────────────────────────────────────────────────────── */
+.order-step { }
+
+.order-cal-wrap {
+  border: 1px solid rgba(201,168,76,0.18);
+  background: rgba(0,0,0,0.25);
+  padding: 1.1rem;
+}
+
+.order-cal-fields {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.order-cal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 130px;
+}
+
+.order-cal-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.order-cal-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(201,168,76,0.25);
+  background: var(--black-card);
+  padding: 0.45rem 0.7rem;
+  color: var(--white-dim);
+}
+
+.order-cal-input-wrap svg { flex-shrink: 0; color: var(--gold); }
+
+.order-cal-input {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 300;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.order-cal-arrow {
+  color: var(--gold);
+  font-size: 1rem;
+  padding-bottom: 0.45rem;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.order-cal-hint {
+  font-size: 0.75rem;
+  color: var(--white-dim);
+  min-height: 1.1em;
+  margin-bottom: 0.85rem;
+  font-style: italic;
+}
+
+.order-cal-confirm-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.order-cal-confirm-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: var(--black);
+}
+
+.order-cal-confirm-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Per-night accordion ──────────────────────────────────────────────────── */
+.night-section {
+  border: 1px solid rgba(201,168,76,0.15);
+  border-top: none;
+}
+
+.night-section:first-child { border-top: 1px solid rgba(201,168,76,0.15); }
+
+.night-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1.1rem;
+  background: rgba(0,0,0,0.2);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  color: var(--white-dim);
+  font-size: 0.82rem;
+  font-weight: 400;
+  text-align: left;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.night-header:hover,
+.night-header.open {
+  background: rgba(201,168,76,0.07);
+  color: var(--white);
+}
+
+.night-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.night-date-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.night-summary-pill {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.night-chevron {
+  flex-shrink: 0;
+  color: var(--gold);
+  transition: transform 0.3s ease;
+}
+
+.night-header.open .night-chevron { transform: rotate(180deg); }
+
+/* Accordion body */
+.night-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+  background: rgba(0,0,0,0.15);
+}
+
+.night-body.open { max-height: 600px; }
+
+/* Time row inside body */
+.night-time-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.1rem 0.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  flex-wrap: wrap;
+}
+
+.night-time-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  font-weight: 500;
+}
+
+.night-time-select {
+  background: var(--black-card);
+  border: 1px solid rgba(201,168,76,0.25);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 300;
+  padding: 0.35rem 0.65rem;
+  outline: none;
+  cursor: pointer;
+  color-scheme: dark;
+  min-width: 130px;
+  transition: border-color 0.2s ease;
+}
+
+.night-time-select:focus { border-color: var(--gold); }
+
+/* Dish list inside accordion (inherits order-dish-list styles) */
+.night-dish-list {
+  max-height: 240px;
+}
+
+/* Summary date heading */
+.order-summary-date-head {
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(201,168,76,0.12);
+}
+
+.order-summary-date-head:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+@media (max-width: 640px) {
+  .order-cal-fields { flex-direction: column; gap: 0.65rem; }
+  .order-cal-arrow { display: none; }
+  .night-time-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .night-time-select { width: 100%; }
+}
 @media (max-width: 640px) {
   .order-footer { flex-direction: column; align-items: stretch; }
   .order-finish-btn { text-align: center; }
