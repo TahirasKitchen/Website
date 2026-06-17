@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "approved": true,
+    "name": "Jessica M.",
+    "rating": 5,
+    "title": "Best Meal of Our Entire Trip",
+    "body": "I honestly didn't expect in-home dining to be this impressive. Tahira prepared the lamb rack and it was flawlessly seasoned — better than any restaurant we visited. The presentation was stunning and the whole experience felt incredibly personal. We'll be booking again on our next stay without question.",
+    "date": "March 2025"
+  },
+  {
+    "id": 2,
+    "approved": true,
+    "name": "Daniel & Sara K.",
+    "rating": 5,
+    "title": "A Chef Who Actually Cares",
+    "body": "We ordered the duck breast and the truffle risotto for two nights. Both nights were exceptional — same quality, same passion. It felt like having a private chef without any of the awkwardness. Tahira even accommodated a last-minute dairy sensitivity without making us feel like a burden. Truly exceptional.",
+    "date": "January 2025"
+  },
+  {
+    "id": 3,
+    "approved": true,
+    "name": "Priya T.",
+    "rating": 5,
+    "title": "The Chocolate Tart Alone Is Worth Staying For",
+    "body": "We almost skipped dessert. Do not skip dessert. The Valrhona chocolate tart was rich, perfectly set, and had this beautiful contrast of salt and sweetness. The short rib we had the night before was equally memorable — fork tender and deeply flavored. This is genuinely restaurant-quality food in the comfort of your Airbnb.",
+    "date": "February 2025"
+  },
+  {
+    "id": 4,
+    "approved": true,
+    "name": "Marcus W.",
+    "rating": 5,
+    "title": "Turned a Good Trip Into an Unforgettable One",
+    "body": "My partner and I were celebrating an anniversary and Tahira made it feel like a full fine dining experience. The miso black cod was silky and caramelized perfectly. The attention to detail — even the way it was plated — showed real pride in the craft. The contact form was easy to use and Tahira responded quickly. Highly recommend adding this to your stay.",
+    "date": "April 2025"
+  },
+  {
+    "id": 5,
+    "approved": true,
+    "name": "Lena H.",
+    "rating": 4,
+    "title": "Incredible Food, Zero Hassle",
+    "body": "After a long day of exploring we didn't want to deal with restaurants or delivery apps. Ordering through the site was simple and the burrata starter followed by the short rib was exactly the kind of comforting, elevated meal we needed. The yuzu posset to finish was light and surprising. Will absolutely order again on our next visit.",
+    "date": "May 2025"
+  }
+]
