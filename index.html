@@ -75,6 +75,81 @@
     </div>
   </main>
 
+  <!-- ── Reviews Slideshow ─────────────────────────────────────────── -->
+  <section class="reviews-section" id="reviews-section" aria-label="Guest reviews">
+    <div class="reviews-inner">
+      <div class="section-header" style="margin-bottom:0">
+        <p class="section-eyebrow">What Guests Say</p>
+        <h2 class="section-title" style="font-size:clamp(1.6rem,4vw,2.4rem)">Guest Reviews</h2>
+        <div class="header-rule"></div>
+      </div>
+
+      <div class="reviews-stage-wrap">
+        <button class="reviews-arrow reviews-arrow-prev" id="reviews-prev" aria-label="Previous review">
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="none"><polyline points="8,1 2,8 8,15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+
+        <div class="reviews-stage" id="reviews-stage" aria-live="polite">
+          <!-- Cards injected by JS -->
+        </div>
+
+        <button class="reviews-arrow reviews-arrow-next" id="reviews-next" aria-label="Next review">
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="none"><polyline points="2,1 8,8 2,15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="reviews-dots" id="reviews-dots" aria-hidden="true"></div>
+
+      <div class="reviews-cta-wrap">
+        <button class="reviews-leave-btn" id="reviews-leave-btn">Leave a Review</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Review Modal ───────────────────────────────────────────────── -->
+  <div class="review-modal-overlay" id="review-modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+    <div class="review-modal">
+      <button class="review-modal-close" id="review-modal-close" aria-label="Close">✕</button>
+      <p class="review-modal-eyebrow">Share Your Experience</p>
+      <h3 class="review-modal-title" id="review-modal-title">Leave a Review</h3>
+      <div class="review-modal-rule"></div>
+
+      <form class="review-form" id="review-form">
+        <!-- Star rating -->
+        <div class="review-stars-wrap" role="group" aria-label="Star rating">
+          <span class="review-stars-label">Your Rating</span>
+          <div class="review-stars" id="review-stars">
+            <button type="button" class="review-star" data-value="1" aria-label="1 star">★</button>
+            <button type="button" class="review-star" data-value="2" aria-label="2 stars">★</button>
+            <button type="button" class="review-star" data-value="3" aria-label="3 stars">★</button>
+            <button type="button" class="review-star" data-value="4" aria-label="4 stars">★</button>
+            <button type="button" class="review-star" data-value="5" aria-label="5 stars">★</button>
+          </div>
+        </div>
+
+        <div class="review-field">
+          <label for="review-name">Your Name</label>
+          <input type="text" id="review-name" name="reviewer_name" placeholder="e.g. Jessica M." required />
+        </div>
+        <div class="review-field">
+          <label for="review-title">Review Title</label>
+          <input type="text" id="review-title-input" name="review_title" placeholder="Sum it up in a line" required />
+        </div>
+        <div class="review-field">
+          <label for="review-body">Your Review</label>
+          <textarea id="review-body" name="review_body" rows="4" placeholder="Tell others about your experience…" required></textarea>
+        </div>
+
+        <input type="hidden" name="review_rating" id="review-rating-hidden" />
+        <input type="hidden" name="access_key" value="954e1a30-859f-419a-9e52-ee39890f1374" />
+        <input type="hidden" name="subject" value="New Review — Tahira's Kitchen" />
+
+        <button type="submit" class="review-submit-btn">Submit Review</button>
+        <p class="review-form-note" id="review-form-note" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="footer-inner">
       <span class="footer-mark">✦</span>
