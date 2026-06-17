@@ -538,165 +538,305 @@ function handleContactSubmit(e) {
    ================================================ */
 
 (function initOrderPanel() {
-  const toggle       = document.getElementById('order-toggle');
-  if (!toggle) return; // not on contact page
+  const toggle      = document.getElementById('order-toggle');
+  if (!toggle) return;
 
-  const panel        = document.getElementById('order-panel');
-  const dishList     = document.getElementById('order-dish-list');
-  const totalEl      = document.getElementById('order-total-value');
-  const finishBtn    = document.getElementById('order-finish-btn');
-  const listWrap     = document.getElementById('order-list-wrap');
-  const summary      = document.getElementById('order-summary');
-  const summaryLines = document.getElementById('order-summary-lines');
-  const summaryTotal = document.getElementById('order-summary-total');
-  const editBtn      = document.getElementById('order-edit-btn');
-  const hiddenField  = document.getElementById('food-order-hidden');
+  const panel       = document.getElementById('order-panel');
+  const stepDates   = document.getElementById('order-step-dates');
+  const stepNights  = document.getElementById('order-step-nights');
+  const summary     = document.getElementById('order-summary');
+  const summaryLines= document.getElementById('order-summary-lines');
+  const summaryTotal= document.getElementById('order-summary-total');
+  const editBtn     = document.getElementById('order-edit-btn');
+  const hiddenField = document.getElementById('food-order-hidden');
+  const checkinEl   = document.getElementById('order-checkin');
+  const checkoutEl  = document.getElementById('order-checkout');
+  const calHint     = document.getElementById('order-cal-hint');
+  const calConfirm  = document.getElementById('order-cal-confirm');
+  const nightsWrap  = document.getElementById('order-nights-wrap');
+  const totalEl     = document.getElementById('order-total-value');
+  const finishBtn   = document.getElementById('order-finish-btn');
 
-  let dishes = [];      // loaded from dishes.json
-  let orderMap = {};    // { id: { dish, qty } }
+  const MAX_NIGHTS  = 7;
+  const HOURS       = ['12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm'];
 
-  // ---- Load dishes from existing dishes.json ----
+  let dishes  = [];
+  // nightOrders: { dateKey: { time: '6pm', items: { dishId: { dish, qty } } } }
+  let nightOrders = {};
+  let stayNights  = []; // array of Date objects (each night)
+
+  // ── Seed today's date as min for both inputs ──────────────────────────────
+  const todayStr = new Date().toISOString().split('T')[0];
+  checkinEl.min  = todayStr;
+  checkoutEl.min = todayStr;
+
+  // ── Load dishes ───────────────────────────────────────────────────────────
   fetch('dishes.json')
     .then(r => r.json())
-    .then(data => { dishes = data; buildDishList(); })
-    .catch(() => {
-      dishList.innerHTML = '<li style="padding:1rem;color:var(--white-dim);font-size:0.82rem;font-style:italic;">Could not load menu.</li>';
-    });
+    .then(data => { dishes = data; })
+    .catch(() => {});
 
-  // ---- Toggle panel open/close ----
+  // ── Toggle ────────────────────────────────────────────────────────────────
   toggle.addEventListener('change', () => {
     if (toggle.checked) {
-      resetOrder(); // always start fresh when opening
+      resetAll();
       panel.classList.add('open');
       panel.setAttribute('aria-hidden', 'false');
     } else {
       panel.classList.remove('open');
       panel.setAttribute('aria-hidden', 'true');
-      resetOrder();
+      resetAll();
     }
   });
 
-  // ---- Build dish rows ----
-  function buildDishList() {
-    dishList.innerHTML = '';
-    dishes.forEach(dish => {
-      const price = parseFloat((dish.price || '$0').replace(/[^0-9.]/g, '')) || 0;
-      const li = document.createElement('li');
-      li.className = 'order-dish-item';
-      li.dataset.id = dish.id;
+  // ── Date inputs ───────────────────────────────────────────────────────────
+  checkinEl.addEventListener('change', validateDates);
+  checkoutEl.addEventListener('change', validateDates);
 
-      // Checkbox
-      const cbWrap = document.createElement('span');
-      cbWrap.className = 'order-dish-cb-wrap';
+  function validateDates() {
+    calHint.textContent = '';
+    calHint.style.color = 'var(--white-dim)';
+    calConfirm.disabled = true;
 
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.className = 'order-dish-cb';
-      cb.id = `odish-${dish.id}`;
-      cb.dataset.price = price;
+    const ci = checkinEl.value;
+    const co = checkoutEl.value;
+    if (!ci || !co) return;
 
-      const cbBox = document.createElement('span');
-      cbBox.className = 'order-dish-cb-box';
+    const d1 = new Date(ci + 'T00:00:00');
+    const d2 = new Date(co + 'T00:00:00');
 
-      cbWrap.appendChild(cb);
-      cbWrap.appendChild(cbBox);
+    if (d2 <= d1) {
+      calHint.textContent = 'Check-out must be after check-in.';
+      calHint.style.color = '#e88';
+      return;
+    }
 
-      // Label wraps cbWrap + name + price so clicking box OR name selects the dish
-      const lbl = document.createElement('label');
-      lbl.className = 'order-dish-label';
-      lbl.htmlFor = cb.id;
+    const nights = Math.round((d2 - d1) / 86400000);
+    if (nights > MAX_NIGHTS) {
+      calHint.textContent = `Maximum ${MAX_NIGHTS} nights for food orders. Please contact us directly for longer stays.`;
+      calHint.style.color = '#e88';
+      return;
+    }
 
-      lbl.appendChild(cbWrap);
+    calHint.textContent = `${nights} night${nights > 1 ? 's' : ''} selected`;
+    calHint.style.color = 'var(--gold)';
+    calConfirm.disabled = false;
+  }
 
-      const nameEl = document.createElement('span');
-      nameEl.className = 'order-dish-name';
-      nameEl.textContent = dish.title;
+  // ── Confirm dates → build per-night accordion ─────────────────────────────
+  calConfirm.addEventListener('click', () => {
+    const d1 = new Date(checkinEl.value + 'T00:00:00');
+    const d2 = new Date(checkoutEl.value + 'T00:00:00');
+    const nights = Math.round((d2 - d1) / 86400000);
 
-      const priceEl = document.createElement('span');
-      priceEl.className = 'order-dish-price';
-      priceEl.textContent = dish.price || '';
+    stayNights = [];
+    nightOrders = {};
+    for (let i = 0; i < nights; i++) {
+      const d = new Date(d1);
+      d.setDate(d1.getDate() + i);
+      stayNights.push(d);
+      const key = dateKey(d);
+      nightOrders[key] = { time: '', items: {} };
+    }
 
-      lbl.appendChild(nameEl);
-      lbl.appendChild(priceEl);
+    buildNightAccordion();
+    stepDates.hidden  = true;
+    stepNights.hidden = false;
+  });
 
-      // Qty controls
-      const qtyWrap = document.createElement('span');
-      qtyWrap.className = 'order-qty-wrap';
+  // ── Build accordion ───────────────────────────────────────────────────────
+  function buildNightAccordion() {
+    nightsWrap.innerHTML = '';
 
-      const minusBtn = document.createElement('button');
-      minusBtn.type = 'button';
-      minusBtn.className = 'order-qty-btn';
-      minusBtn.textContent = '−';
-      minusBtn.setAttribute('aria-label', 'Decrease quantity');
+    stayNights.forEach((date, idx) => {
+      const key = dateKey(date);
+      const section = document.createElement('div');
+      section.className = 'night-section';
+      section.dataset.key = key;
 
-      const qtyInput = document.createElement('input');
-      qtyInput.type = 'number';
-      qtyInput.className = 'order-qty-input';
-      qtyInput.value = 1;
-      qtyInput.min = 1;
-      qtyInput.max = 20;
-      qtyInput.setAttribute('aria-label', 'Quantity');
+      // Header / toggle
+      const header = document.createElement('button');
+      header.type = 'button';
+      header.className = 'night-header' + (idx === 0 ? ' open' : '');
+      header.setAttribute('aria-expanded', idx === 0 ? 'true' : 'false');
+      header.innerHTML = `
+        <span class="night-header-left">
+          <span class="night-date-label">${formatNight(date, idx)}</span>
+          <span class="night-summary-pill" id="pill-${key}"></span>
+        </span>
+        <span class="night-chevron">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <polyline points="2,3 5,7 8,3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>`;
 
-      const plusBtn = document.createElement('button');
-      plusBtn.type = 'button';
-      plusBtn.className = 'order-qty-btn';
-      plusBtn.textContent = '+';
-      plusBtn.setAttribute('aria-label', 'Increase quantity');
+      // Body
+      const body = document.createElement('div');
+      body.className = 'night-body' + (idx === 0 ? ' open' : '');
+      body.id = `night-body-${key}`;
 
-      qtyWrap.appendChild(minusBtn);
-      qtyWrap.appendChild(qtyInput);
-      qtyWrap.appendChild(plusBtn);
+      // Time picker
+      const timeRow = document.createElement('div');
+      timeRow.className = 'night-time-row';
+      timeRow.innerHTML = `<span class="night-time-label">Preferred serving time</span>`;
+      const timeSelect = document.createElement('select');
+      timeSelect.className = 'night-time-select';
+      timeSelect.id = `time-${key}`;
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = '— Select time —';
+      timeSelect.appendChild(placeholder);
+      HOURS.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        timeSelect.appendChild(opt);
+      });
+      timeRow.appendChild(timeSelect);
+      body.appendChild(timeRow);
 
-      li.appendChild(lbl);
-      li.appendChild(qtyWrap);
-      dishList.appendChild(li);
+      // Dish list
+      const ul = document.createElement('ul');
+      ul.className = 'order-dish-list night-dish-list';
+      dishes.forEach(dish => {
+        ul.appendChild(buildDishRow(dish, key));
+      });
+      body.appendChild(ul);
 
-      // ---- Events ----
-      cb.addEventListener('change', () => {
-        if (cb.checked) {
-          orderMap[dish.id] = { dish, qty: parseInt(qtyInput.value) || 1 };
-        } else {
-          delete orderMap[dish.id];
-          qtyInput.value = 1;
+      section.appendChild(header);
+      section.appendChild(body);
+      nightsWrap.appendChild(section);
+
+      // Accordion toggle
+      header.addEventListener('click', () => {
+        const isOpen = body.classList.contains('open');
+        // Close all
+        nightsWrap.querySelectorAll('.night-body').forEach(b => b.classList.remove('open'));
+        nightsWrap.querySelectorAll('.night-header').forEach(h => {
+          h.classList.remove('open');
+          h.setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          body.classList.add('open');
+          header.classList.add('open');
+          header.setAttribute('aria-expanded', 'true');
         }
-        updateTotal();
       });
 
-      qtyInput.addEventListener('input', () => {
-        let v = parseInt(qtyInput.value) || 1;
-        if (v < 1) v = 1;
-        if (v > 20) v = 20;
-        qtyInput.value = v;
-        if (cb.checked) {
-          orderMap[dish.id] = { dish, qty: v };
-          updateTotal();
-        }
-      });
-
-      minusBtn.addEventListener('click', () => {
-        let v = parseInt(qtyInput.value) || 1;
-        if (v > 1) { qtyInput.value = v - 1; qtyInput.dispatchEvent(new Event('input')); }
-      });
-
-      plusBtn.addEventListener('click', () => {
-        let v = parseInt(qtyInput.value) || 1;
-        if (v < 20) { qtyInput.value = v + 1; qtyInput.dispatchEvent(new Event('input')); }
+      // Time change → update nightOrders + pill
+      timeSelect.addEventListener('change', () => {
+        nightOrders[key].time = timeSelect.value;
+        updatePill(key);
+        updateGrandTotal();
       });
     });
   }
 
-  // ---- Running total ----
-  function updateTotal() {
-    const total = Object.values(orderMap).reduce((sum, { dish, qty }) => {
-      const p = parseFloat((dish.price || '0').replace(/[^0-9.]/g, '')) || 0;
-      return sum + p * qty;
+  // ── Build one dish row (reusable per night) ───────────────────────────────
+  function buildDishRow(dish, key) {
+    const li = document.createElement('li');
+    li.className = 'order-dish-item';
+
+    const cbWrap = document.createElement('span');
+    cbWrap.className = 'order-dish-cb-wrap';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'order-dish-cb';
+    cb.id = `odish-${key}-${dish.id}`;
+    const cbBox = document.createElement('span');
+    cbBox.className = 'order-dish-cb-box';
+    cbWrap.appendChild(cb);
+    cbWrap.appendChild(cbBox);
+
+    const lbl = document.createElement('label');
+    lbl.className = 'order-dish-label';
+    lbl.htmlFor = cb.id;
+    lbl.appendChild(cbWrap);
+    const nameEl = document.createElement('span');
+    nameEl.className = 'order-dish-name';
+    nameEl.textContent = dish.title;
+    const priceEl = document.createElement('span');
+    priceEl.className = 'order-dish-price';
+    priceEl.textContent = dish.price || '';
+    lbl.appendChild(nameEl);
+    lbl.appendChild(priceEl);
+
+    const qtyWrap = document.createElement('span');
+    qtyWrap.className = 'order-qty-wrap';
+    const minusBtn = document.createElement('button');
+    minusBtn.type = 'button';
+    minusBtn.className = 'order-qty-btn';
+    minusBtn.textContent = '−';
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'number';
+    qtyInput.className = 'order-qty-input';
+    qtyInput.value = 1; qtyInput.min = 1; qtyInput.max = 20;
+    const plusBtn = document.createElement('button');
+    plusBtn.type = 'button';
+    plusBtn.className = 'order-qty-btn';
+    plusBtn.textContent = '+';
+    qtyWrap.appendChild(minusBtn);
+    qtyWrap.appendChild(qtyInput);
+    qtyWrap.appendChild(plusBtn);
+
+    li.appendChild(lbl);
+    li.appendChild(qtyWrap);
+
+    // Events
+    const update = () => {
+      if (cb.checked) {
+        nightOrders[key].items[dish.id] = { dish, qty: parseInt(qtyInput.value) || 1 };
+      } else {
+        delete nightOrders[key].items[dish.id];
+        qtyInput.value = 1;
+      }
+      updatePill(key);
+      updateGrandTotal();
+    };
+
+    cb.addEventListener('change', update);
+    qtyInput.addEventListener('input', () => {
+      let v = parseInt(qtyInput.value) || 1;
+      qtyInput.value = Math.min(Math.max(v, 1), 20);
+      if (cb.checked) { nightOrders[key].items[dish.id].qty = parseInt(qtyInput.value); updatePill(key); updateGrandTotal(); }
+    });
+    minusBtn.addEventListener('click', () => {
+      if (parseInt(qtyInput.value) > 1) { qtyInput.value--; qtyInput.dispatchEvent(new Event('input')); }
+    });
+    plusBtn.addEventListener('click', () => {
+      if (parseInt(qtyInput.value) < 20) { qtyInput.value++; qtyInput.dispatchEvent(new Event('input')); }
+    });
+
+    return li;
+  }
+
+  // ── Pill: compact per-night summary in accordion header ───────────────────
+  function updatePill(key) {
+    const pill = document.getElementById(`pill-${key}`);
+    if (!pill) return;
+    const order = nightOrders[key];
+    const count = Object.values(order.items).reduce((s, {qty}) => s + qty, 0);
+    if (count === 0 && !order.time) { pill.textContent = ''; return; }
+    const parts = [];
+    if (count > 0) parts.push(`${count} dish${count > 1 ? 'es' : ''}`);
+    if (order.time) parts.push(`@ ${order.time}`);
+    pill.textContent = parts.join(' ');
+  }
+
+  // ── Grand total across all nights ─────────────────────────────────────────
+  function updateGrandTotal() {
+    const total = Object.values(nightOrders).reduce((sum, { items }) => {
+      return sum + Object.values(items).reduce((s, { dish, qty }) => {
+        return s + (parseFloat((dish.price||'0').replace(/[^0-9.]/g,''))||0) * qty;
+      }, 0);
     }, 0);
     totalEl.textContent = `$${total.toFixed(2)}`;
   }
 
-  // ---- Finish order ----
+  // ── Finish order ──────────────────────────────────────────────────────────
   finishBtn.addEventListener('click', () => {
-    if (Object.keys(orderMap).length === 0) {
+    const hasAnyDish = Object.values(nightOrders).some(n => Object.keys(n.items).length > 0);
+    if (!hasAnyDish) {
       finishBtn.textContent = 'Select at least one dish';
       setTimeout(() => { finishBtn.textContent = 'Finish Order'; }, 2000);
       return;
@@ -706,60 +846,81 @@ function handleContactSubmit(e) {
 
   function showSummary() {
     summaryLines.innerHTML = '';
-    let total = 0;
+    let grandTotal = 0;
+    const emailLines = [];
 
-    Object.values(orderMap).forEach(({ dish, qty }) => {
-      const price = parseFloat((dish.price || '0').replace(/[^0-9.]/g, '')) || 0;
-      const lineTotal = price * qty;
-      total += lineTotal;
+    stayNights.forEach(date => {
+      const key = dateKey(date);
+      const { time, items } = nightOrders[key];
+      if (Object.keys(items).length === 0) return;
 
-      const row = document.createElement('div');
-      row.className = 'order-summary-line';
+      // Date heading in summary
+      const dateHead = document.createElement('div');
+      dateHead.className = 'order-summary-date-head';
+      dateHead.textContent = formatNight(date) + (time ? ` — ${time}` : '');
+      summaryLines.appendChild(dateHead);
 
-      const namePart = document.createElement('span');
-      namePart.className = 'order-summary-line-name';
-      namePart.textContent = qty > 1 ? `${dish.title} × ${qty}` : dish.title;
+      const emailNightLines = [];
+      Object.values(items).forEach(({ dish, qty }) => {
+        const p = parseFloat((dish.price||'0').replace(/[^0-9.]/g,''))||0;
+        const lineTotal = p * qty;
+        grandTotal += lineTotal;
 
-      const pricePart = document.createElement('span');
-      pricePart.className = 'order-summary-line-price';
-      pricePart.textContent = `$${lineTotal.toFixed(2)}`;
+        const row = document.createElement('div');
+        row.className = 'order-summary-line';
+        const nameEl = document.createElement('span');
+        nameEl.className = 'order-summary-line-name';
+        nameEl.textContent = qty > 1 ? `${dish.title} × ${qty}` : dish.title;
+        const priceEl = document.createElement('span');
+        priceEl.className = 'order-summary-line-price';
+        priceEl.textContent = `$${lineTotal.toFixed(2)}`;
+        row.appendChild(nameEl);
+        row.appendChild(priceEl);
+        summaryLines.appendChild(row);
 
-      row.appendChild(namePart);
-      row.appendChild(pricePart);
-      summaryLines.appendChild(row);
+        emailNightLines.push(`${dish.title}${qty > 1 ? ` x${qty}` : ''} ($${lineTotal.toFixed(2)})`);
+      });
+
+      emailLines.push(`${formatNight(date)}${time ? ' @ ' + time : ''}: ${emailNightLines.join(', ')}`);
     });
 
-    summaryTotal.textContent = `$${total.toFixed(2)}`;
+    summaryTotal.textContent = `$${grandTotal.toFixed(2)}`;
+    hiddenField.value = emailLines.join(' | ') + ` | TOTAL: $${grandTotal.toFixed(2)}`;
 
-    // Build hidden field value for email
-    const orderText = Object.values(orderMap)
-      .map(({ dish, qty }) => {
-        const p = parseFloat((dish.price || '0').replace(/[^0-9.]/g, '')) || 0;
-        return `${dish.title}${qty > 1 ? ` x${qty}` : ''} — $${(p * qty).toFixed(2)}`;
-      })
-      .join('; ') + ` | TOTAL: $${total.toFixed(2)}`;
-    hiddenField.value = orderText;
-
-    listWrap.hidden = true;
+    stepNights.hidden = true;
     summary.hidden = false;
   }
 
-  // ---- Edit order ----
+  // ── Edit ──────────────────────────────────────────────────────────────────
   editBtn.addEventListener('click', () => {
-    summary.hidden = true;
-    listWrap.hidden = false;
+    summary.hidden    = true;
+    stepNights.hidden = false;
     hiddenField.value = '';
   });
 
-  function resetOrder() {
-    orderMap = {};
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function dateKey(d) {
+    return d.toISOString().split('T')[0];
+  }
+
+  function formatNight(date, idx) {
+    const label = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    return idx !== undefined ? `Night ${idx + 1} — ${label}` : label;
+  }
+
+  function resetAll() {
+    nightOrders  = {};
+    stayNights   = [];
     hiddenField.value = '';
-    listWrap.hidden = false;
-    summary.hidden = true;
-    // Uncheck all and reset qty
-    dishList.querySelectorAll('.order-dish-cb').forEach(cb => { cb.checked = false; });
-    dishList.querySelectorAll('.order-qty-input').forEach(inp => { inp.value = 1; });
-    totalEl.textContent = '$0';
+    checkinEl.value   = '';
+    checkoutEl.value  = '';
+    calHint.textContent = '';
+    if (calConfirm) calConfirm.disabled = true;
+    nightsWrap.innerHTML = '';
+    summary.hidden    = true;
+    stepNights.hidden = true;
+    stepDates.hidden  = false;
+    if (totalEl) totalEl.textContent = '$0';
   }
 
 })();
