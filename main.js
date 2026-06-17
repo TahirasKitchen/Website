@@ -883,14 +883,14 @@ function handleContactSubmit(e) {
     let autoTimer = setInterval(() => {
       if (current + perPage >= reviews.length) { goTo(0); }
       else { goTo(current + perPage); }
-    }, 5000);
+    }, 8000);
 
     stage.addEventListener('mouseenter', () => clearInterval(autoTimer));
     stage.addEventListener('mouseleave', () => {
       autoTimer = setInterval(() => {
         if (current + perPage >= reviews.length) { goTo(0); }
         else { goTo(current + perPage); }
-      }, 5000);
+      }, 8000);
     });
 
     // Touch/swipe support
