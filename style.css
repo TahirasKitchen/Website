@@ -1600,7 +1600,10 @@ ul[role="list"] { list-style: none; }
   background: rgba(0,0,0,0.15);
 }
 
-.night-body.open { max-height: 600px; }
+.night-body.open {
+  max-height: 900px;
+  overflow-y: auto;
+}
 
 .night-time-row {
   display: flex;
@@ -2404,4 +2407,97 @@ ul[role="list"] { list-style: none; }
   .reviews-stage-wrap { gap: 0.5rem; }
   .reviews-arrow { width: 30px; height: 30px; }
   .review-modal { padding: 1.5rem 1.25rem; }
+}
+
+
+/* ── Meal period checkboxes ───────────────────────────────────────────────── */
+.meal-period-row {
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  flex-wrap: wrap;
+}
+
+.meal-period-cb-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.meal-period-cb {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.meal-period-cb-box {
+  display: block;
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgba(201,168,76,0.35);
+  background: transparent;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.meal-period-cb:checked ~ .meal-period-cb-box {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.meal-period-cb:checked ~ .meal-period-cb-box::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0.5px;
+  width: 6px;
+  height: 9px;
+  border: 1.5px solid var(--black);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.meal-period-cb-label {
+  font-size: 0.78rem;
+  color: var(--white-dim);
+  font-weight: 400;
+  transition: color 0.18s ease;
+}
+
+.meal-period-cb:checked ~ .meal-period-cb-label {
+  color: var(--white);
+}
+
+/* ── Panels that appear per checked meal period ──────────────────────────── */
+.meal-period-panels { }
+
+.meal-period-panel {
+  border-top: 1px solid rgba(201,168,76,0.1);
+  background: rgba(0,0,0,0.12);
+  animation: mealPanelIn 0.25s ease;
+}
+
+@keyframes mealPanelIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.order-summary-period-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  font-weight: 500;
+  margin-top: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+@media (max-width: 640px) {
+  .meal-period-row { gap: 1rem; padding: 0.75rem 1rem; }
 }
