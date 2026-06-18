@@ -716,9 +716,16 @@ function handleContactSubmit(e) {
       section.appendChild(body);
       nightsWrap.appendChild(section);
 
+      if (idx === 0) {
+        requestAnimationFrame(() => { body.style.maxHeight = body.scrollHeight + 'px'; });
+      }
+
       header.addEventListener('click', () => {
         const isOpen = body.classList.contains('open');
-        nightsWrap.querySelectorAll('.night-body').forEach(b => b.classList.remove('open'));
+        nightsWrap.querySelectorAll('.night-body').forEach(b => {
+          b.classList.remove('open');
+          b.style.maxHeight = '';
+        });
         nightsWrap.querySelectorAll('.night-header').forEach(h => {
           h.classList.remove('open');
           h.setAttribute('aria-expanded', 'false');
@@ -727,6 +734,7 @@ function handleContactSubmit(e) {
           body.classList.add('open');
           header.classList.add('open');
           header.setAttribute('aria-expanded', 'true');
+          requestAnimationFrame(() => { body.style.maxHeight = body.scrollHeight + 'px'; });
         }
       });
     });
@@ -771,6 +779,7 @@ function handleContactSubmit(e) {
   function buildPeriodPanel(period, dayKey) {
     const panelsWrap = document.getElementById(`period-panels-${dayKey}`);
     if (!panelsWrap || document.getElementById(`panel-${dayKey}-${period}`)) return;
+    // placeholder for recalc call appended at end of function (see below)
 
     const panelDiv = document.createElement('div');
     panelDiv.className = 'meal-period-panel';
@@ -818,12 +827,62 @@ function handleContactSubmit(e) {
       dayOrders[dayKey][period].time = timeSelect.value;
       updatePill(dayKey);
       updateGrandTotal();
+      validateAndStyle(dayKey, period);
     });
+
+    recalcOpenBodyHeight(dayKey);
+    validateAndStyle(dayKey, period);
+  }
+
+  // Checks whether a checked period has BOTH a time AND at least one dish.
+  // Shows an inline warning if only one of the two is set; clears it otherwise.
+  function validateAndStyle(dayKey, period) {
+    const order = dayOrders[dayKey] && dayOrders[dayKey][period];
+    const panel = document.getElementById(`panel-${dayKey}-${period}`);
+    if (!order || !panel) return;
+
+    const hasTime  = !!order.time;
+    const hasItems = Object.keys(order.items).length > 0;
+
+    let warn = panel.querySelector('.meal-period-warning');
+    if ((hasTime && !hasItems) || (!hasTime && hasItems)) {
+      if (!warn) {
+        warn = document.createElement('p');
+        warn.className = 'meal-period-warning';
+        panel.insertBefore(warn, panel.firstChild.nextSibling); // after time row
+      }
+      warn.textContent = hasTime
+        ? 'Please select at least one dish for this time.'
+        : 'Please select a serving time for your selected dish(es).';
+      panel.classList.add('incomplete');
+    } else {
+      if (warn) warn.remove();
+      panel.classList.remove('incomplete');
+    }
+    recalcOpenBodyHeight(dayKey);
+  }
+
+  // Returns true if every checked meal period across every day has both a time and at least one dish
+  function allPeriodsComplete() {
+    let valid = true;
+    Object.entries(dayOrders).forEach(([dayKey, periods]) => {
+      Object.entries(periods).forEach(([period, order]) => {
+        const hasTime  = !!order.time;
+        const hasItems = Object.keys(order.items).length > 0;
+        const isChecked = document.getElementById(`meal-${dayKey}-${period}`)?.checked;
+        if (isChecked && (hasTime !== hasItems)) {
+          valid = false;
+          validateAndStyle(dayKey, period);
+        }
+      });
+    });
+    return valid;
   }
 
   function removePeriodPanel(period, dayKey) {
     const el = document.getElementById(`panel-${dayKey}-${period}`);
     if (el) el.remove();
+    recalcOpenBodyHeight(dayKey);
   }
 
   // ── Build one dish row (scoped to day + period) ─────────────────────────
@@ -885,6 +944,7 @@ function handleContactSubmit(e) {
       }
       updatePill(dayKey);
       updateGrandTotal();
+      validateAndStyle(dayKey, period);
     };
 
     cb.addEventListener('change', update);
@@ -940,6 +1000,11 @@ function handleContactSubmit(e) {
     if (!hasAnyDish) {
       finishBtn.textContent = 'Select at least one dish';
       setTimeout(() => { finishBtn.textContent = 'Finish Order'; }, 2000);
+      return;
+    }
+    if (!allPeriodsComplete()) {
+      finishBtn.textContent = 'Please complete highlighted meals';
+      setTimeout(() => { finishBtn.textContent = 'Finish Order'; }, 2500);
       return;
     }
     showSummary();
@@ -1016,6 +1081,17 @@ function handleContactSubmit(e) {
   // ── Helpers ───────────────────────────────────────────────────────────────
   function dateKey(d) {
     return d.toISOString().split('T')[0];
+  }
+
+  // Recalculate an open accordion body's max-height to fit its actual content.
+  // Called whenever a meal panel is added/removed inside an open day.
+  function recalcOpenBodyHeight(dayKey) {
+    const body = document.getElementById(`night-body-${dayKey}`);
+    if (!body || !body.classList.contains('open')) return;
+    // Reset then measure on next frame so the browser has laid out new children
+    body.style.maxHeight = 'none';
+    const h = body.scrollHeight;
+    body.style.maxHeight = h + 'px';
   }
 
   function formatDayLabel(day, idx) {
