@@ -1601,8 +1601,8 @@ ul[role="list"] { list-style: none; }
 }
 
 .night-body.open {
-  max-height: 900px;
-  overflow-y: auto;
+  overflow-y: visible;
+  /* max-height is set inline via JS to match actual content height */
 }
 
 .night-time-row {
@@ -2500,4 +2500,17 @@ ul[role="list"] { list-style: none; }
 
 @media (max-width: 640px) {
   .meal-period-row { gap: 1rem; padding: 0.75rem 1rem; }
+}
+
+/* ── Incomplete meal period warning ──────────────────────────────────────── */
+.meal-period-panel.incomplete {
+  border-left: 2px solid #e88;
+}
+
+.meal-period-warning {
+  font-size: 0.72rem;
+  color: #e88;
+  font-style: italic;
+  padding: 0 1.1rem 0.6rem;
+  margin: 0;
 }
