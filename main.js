@@ -557,26 +557,30 @@ function handleContactSubmit(e) {
   const totalEl     = document.getElementById('order-total-value');
   const finishBtn   = document.getElementById('order-finish-btn');
 
-  const MAX_NIGHTS  = 7;
-  const HOURS       = ['12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm','9pm'];
+  const MAX_NIGHTS = 7;
+
+  // Meal period definitions: hour windows + which hours render in the <select>
+  const MEAL_PERIODS = {
+    breakfast: { label: 'Breakfast', hours: ['8am','9am','10am'] },
+    lunch:     { label: 'Lunch',     hours: ['12pm','1pm','2pm'] },
+    dinner:    { label: 'Dinner',    hours: ['5pm','6pm','7pm','8pm'] }
+  };
 
   let dishes  = [];
-  // nightOrders: { dateKey: { time: '6pm', items: { dishId: { dish, qty } } } }
-  let nightOrders = {};
-  let stayNights  = []; // array of Date objects (each night)
+  // dayOrders: { dateKey: { breakfast: {time:'', items:{}}, lunch:{...}, dinner:{...} } }
+  let dayOrders  = {};
+  let stayDays   = []; // array of { date: Date, isCheckinDay: bool, isCheckoutDay: bool }
 
-  // ── Seed today's date as min for both inputs ──────────────────────────────
   const todayStr = new Date().toISOString().split('T')[0];
   checkinEl.min  = todayStr;
   checkoutEl.min = todayStr;
 
-  // ── Load dishes ───────────────────────────────────────────────────────────
   fetch('dishes.json')
     .then(r => r.json())
     .then(data => { dishes = data; })
     .catch(() => {});
 
-  // ── Toggle ────────────────────────────────────────────────────────────────
+  // ── Toggle open/close ────────────────────────────────────────────────────
   toggle.addEventListener('change', () => {
     if (toggle.checked) {
       resetAll();
@@ -589,7 +593,7 @@ function handleContactSubmit(e) {
     }
   });
 
-  // ── Date inputs ───────────────────────────────────────────────────────────
+  // ── Date validation ──────────────────────────────────────────────────────
   checkinEl.addEventListener('change', validateDates);
   checkoutEl.addEventListener('change', validateDates);
   checkinEl.addEventListener('input', validateDates);
@@ -625,33 +629,52 @@ function handleContactSubmit(e) {
     calConfirm.disabled = false;
   }
 
-  // ── Confirm dates → build per-night accordion ─────────────────────────────
+  // ── Confirm dates → build per-day list ──────────────────────────────────
   calConfirm.addEventListener('click', () => {
     const d1 = new Date(checkinEl.value + 'T00:00:00');
     const d2 = new Date(checkoutEl.value + 'T00:00:00');
     const nights = Math.round((d2 - d1) / 86400000);
 
-    stayNights = [];
-    nightOrders = {};
-    for (let i = 0; i < nights; i++) {
+    stayDays  = [];
+    dayOrders = {};
+
+    // One row per calendar day guest is present: check-in day through check-out day
+    for (let i = 0; i <= nights; i++) {
       const d = new Date(d1);
       d.setDate(d1.getDate() + i);
-      stayNights.push(d);
+      const isCheckinDay  = i === 0;
+      const isCheckoutDay = i === nights;
+      stayDays.push({ date: d, isCheckinDay, isCheckoutDay });
+
       const key = dateKey(d);
-      nightOrders[key] = { time: '', items: {} };
+      const periods = {};
+      availablePeriods(isCheckinDay, isCheckoutDay).forEach(p => {
+        periods[p] = { time: '', items: {} };
+      });
+      dayOrders[key] = periods;
     }
 
-    buildNightAccordion();
+    buildDayAccordion();
     stepDates.hidden  = true;
     stepNights.hidden = false;
   });
 
-  // ── Build accordion ───────────────────────────────────────────────────────
-  function buildNightAccordion() {
+  // Which meal periods are offered on a given day
+  function availablePeriods(isCheckinDay, isCheckoutDay) {
+    if (isCheckinDay && isCheckoutDay) return ['dinner']; // single-day stay edge case, arrive 3pm leave noon next... shouldn't normally happen
+    if (isCheckinDay)  return ['dinner'];                  // arrive 3pm → dinner only
+    if (isCheckoutDay) return ['breakfast'];                // leave noon → breakfast only
+    return ['breakfast', 'lunch', 'dinner'];                // full day
+  }
+
+  // ── Build accordion: one section per day ────────────────────────────────
+  function buildDayAccordion() {
     nightsWrap.innerHTML = '';
 
-    stayNights.forEach((date, idx) => {
-      const key = dateKey(date);
+    stayDays.forEach((day, idx) => {
+      const key = dateKey(day.date);
+      const periods = availablePeriods(day.isCheckinDay, day.isCheckoutDay);
+
       const section = document.createElement('div');
       section.className = 'night-section';
       section.dataset.key = key;
@@ -662,7 +685,7 @@ function handleContactSubmit(e) {
       header.setAttribute('aria-expanded', idx === 0 ? 'true' : 'false');
       header.innerHTML = `
         <span class="night-header-left">
-          <span class="night-date-label">${formatNight(date, idx)}</span>
+          <span class="night-date-label">${formatDayLabel(day, idx)}</span>
           <span class="night-summary-pill" id="pill-${key}"></span>
         </span>
         <span class="night-chevron">
@@ -675,31 +698,19 @@ function handleContactSubmit(e) {
       body.className = 'night-body' + (idx === 0 ? ' open' : '');
       body.id = `night-body-${key}`;
 
-      const timeRow = document.createElement('div');
-      timeRow.className = 'night-time-row';
-      timeRow.innerHTML = `<span class="night-time-label">Preferred serving time</span>`;
-      const timeSelect = document.createElement('select');
-      timeSelect.className = 'night-time-select';
-      timeSelect.id = `time-${key}`;
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = '— Select time —';
-      timeSelect.appendChild(placeholder);
-      HOURS.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h;
-        opt.textContent = h;
-        timeSelect.appendChild(opt);
+      // Meal period checkboxes
+      const mealRow = document.createElement('div');
+      mealRow.className = 'meal-period-row';
+      periods.forEach(p => {
+        mealRow.appendChild(buildMealCheckbox(p, key));
       });
-      timeRow.appendChild(timeSelect);
-      body.appendChild(timeRow);
+      body.appendChild(mealRow);
 
-      const ul = document.createElement('ul');
-      ul.className = 'order-dish-list night-dish-list';
-      dishes.forEach(dish => {
-        ul.appendChild(buildDishRow(dish, key));
-      });
-      body.appendChild(ul);
+      // Container where each checked period's menu gets injected
+      const periodPanelsWrap = document.createElement('div');
+      periodPanelsWrap.className = 'meal-period-panels';
+      periodPanelsWrap.id = `period-panels-${key}`;
+      body.appendChild(periodPanelsWrap);
 
       section.appendChild(header);
       section.appendChild(body);
@@ -718,17 +729,105 @@ function handleContactSubmit(e) {
           header.setAttribute('aria-expanded', 'true');
         }
       });
-
-      timeSelect.addEventListener('change', () => {
-        nightOrders[key].time = timeSelect.value;
-        updatePill(key);
-        updateGrandTotal();
-      });
     });
   }
 
-  // ── Build one dish row (reusable per night) ───────────────────────────────
-  function buildDishRow(dish, key) {
+  // ── One meal-period checkbox (Breakfast / Lunch / Dinner) ──────────────
+  function buildMealCheckbox(period, dayKey) {
+    const wrap = document.createElement('label');
+    wrap.className = 'meal-period-cb-wrap';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'meal-period-cb';
+    cb.id = `meal-${dayKey}-${period}`;
+
+    const box = document.createElement('span');
+    box.className = 'meal-period-cb-box';
+
+    const text = document.createElement('span');
+    text.className = 'meal-period-cb-label';
+    text.textContent = MEAL_PERIODS[period].label;
+
+    wrap.appendChild(cb);
+    wrap.appendChild(box);
+    wrap.appendChild(text);
+
+    cb.addEventListener('change', () => {
+      if (cb.checked) {
+        buildPeriodPanel(period, dayKey);
+      } else {
+        removePeriodPanel(period, dayKey);
+        dayOrders[dayKey][period] = { time: '', items: {} };
+      }
+      updatePill(dayKey);
+      updateGrandTotal();
+    });
+
+    return wrap;
+  }
+
+  // ── Build the dish-list + time panel for one checked period ─────────────
+  function buildPeriodPanel(period, dayKey) {
+    const panelsWrap = document.getElementById(`period-panels-${dayKey}`);
+    if (!panelsWrap || document.getElementById(`panel-${dayKey}-${period}`)) return;
+
+    const panelDiv = document.createElement('div');
+    panelDiv.className = 'meal-period-panel';
+    panelDiv.id = `panel-${dayKey}-${period}`;
+
+    // Time select scoped to this period's hours
+    const timeRow = document.createElement('div');
+    timeRow.className = 'night-time-row';
+    timeRow.innerHTML = `<span class="night-time-label">${MEAL_PERIODS[period].label} serving time</span>`;
+    const timeSelect = document.createElement('select');
+    timeSelect.className = 'night-time-select';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— Select time —';
+    timeSelect.appendChild(placeholder);
+    MEAL_PERIODS[period].hours.forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h;
+      opt.textContent = h;
+      timeSelect.appendChild(opt);
+    });
+    timeRow.appendChild(timeSelect);
+    panelDiv.appendChild(timeRow);
+
+    // Dish list filtered to this meal period
+    const ul = document.createElement('ul');
+    ul.className = 'order-dish-list night-dish-list';
+    const filtered = dishes.filter(d => (d.mealPeriods || []).includes(period));
+    if (filtered.length === 0) {
+      const li = document.createElement('li');
+      li.style.padding = '1rem 1.1rem';
+      li.style.color = 'var(--white-dim)';
+      li.style.fontSize = '0.8rem';
+      li.style.fontStyle = 'italic';
+      li.textContent = `No ${MEAL_PERIODS[period].label.toLowerCase()} items available yet.`;
+      ul.appendChild(li);
+    } else {
+      filtered.forEach(dish => ul.appendChild(buildDishRow(dish, dayKey, period)));
+    }
+    panelDiv.appendChild(ul);
+
+    panelsWrap.appendChild(panelDiv);
+
+    timeSelect.addEventListener('change', () => {
+      dayOrders[dayKey][period].time = timeSelect.value;
+      updatePill(dayKey);
+      updateGrandTotal();
+    });
+  }
+
+  function removePeriodPanel(period, dayKey) {
+    const el = document.getElementById(`panel-${dayKey}-${period}`);
+    if (el) el.remove();
+  }
+
+  // ── Build one dish row (scoped to day + period) ─────────────────────────
+  function buildDishRow(dish, dayKey, period) {
     const li = document.createElement('li');
     li.className = 'order-dish-item';
 
@@ -737,7 +836,7 @@ function handleContactSubmit(e) {
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.className = 'order-dish-cb';
-    cb.id = `odish-${key}-${dish.id}`;
+    cb.id = `odish-${dayKey}-${period}-${dish.id}`;
     const cbBox = document.createElement('span');
     cbBox.className = 'order-dish-cb-box';
     cbWrap.appendChild(cb);
@@ -779,12 +878,12 @@ function handleContactSubmit(e) {
 
     const update = () => {
       if (cb.checked) {
-        nightOrders[key].items[dish.id] = { dish, qty: parseInt(qtyInput.value) || 1 };
+        dayOrders[dayKey][period].items[dish.id] = { dish, qty: parseInt(qtyInput.value) || 1 };
       } else {
-        delete nightOrders[key].items[dish.id];
+        delete dayOrders[dayKey][period].items[dish.id];
         qtyInput.value = 1;
       }
-      updatePill(key);
+      updatePill(dayKey);
       updateGrandTotal();
     };
 
@@ -792,7 +891,7 @@ function handleContactSubmit(e) {
     qtyInput.addEventListener('input', () => {
       let v = parseInt(qtyInput.value) || 1;
       qtyInput.value = Math.min(Math.max(v, 1), 20);
-      if (cb.checked) { nightOrders[key].items[dish.id].qty = parseInt(qtyInput.value); updatePill(key); updateGrandTotal(); }
+      if (cb.checked) { dayOrders[dayKey][period].items[dish.id].qty = parseInt(qtyInput.value); updatePill(dayKey); updateGrandTotal(); }
     });
     minusBtn.addEventListener('click', () => {
       if (parseInt(qtyInput.value) > 1) { qtyInput.value--; qtyInput.dispatchEvent(new Event('input')); }
@@ -804,32 +903,40 @@ function handleContactSubmit(e) {
     return li;
   }
 
-  // ── Pill: compact per-night summary in accordion header ───────────────────
-  function updatePill(key) {
-    const pill = document.getElementById(`pill-${key}`);
+  // ── Pill: compact summary in accordion header ────────────────────────────
+  function updatePill(dayKey) {
+    const pill = document.getElementById(`pill-${dayKey}`);
     if (!pill) return;
-    const order = nightOrders[key];
-    const count = Object.values(order.items).reduce((s, {qty}) => s + qty, 0);
-    if (count === 0 && !order.time) { pill.textContent = ''; return; }
+    const periods = dayOrders[dayKey];
     const parts = [];
-    if (count > 0) parts.push(`${count} dish${count > 1 ? 'es' : ''}`);
-    if (order.time) parts.push(`@ ${order.time}`);
-    pill.textContent = parts.join(' ');
+    Object.keys(periods).forEach(p => {
+      const { items, time } = periods[p];
+      const count = Object.values(items).reduce((s, {qty}) => s + qty, 0);
+      if (count > 0) {
+        parts.push(`${MEAL_PERIODS[p].label}: ${count}${time ? ' @ ' + time : ''}`);
+      }
+    });
+    pill.textContent = parts.join(' · ');
   }
 
-  // ── Grand total across all nights ─────────────────────────────────────────
+  // ── Grand total across all days/periods ──────────────────────────────────
   function updateGrandTotal() {
-    const total = Object.values(nightOrders).reduce((sum, { items }) => {
-      return sum + Object.values(items).reduce((s, { dish, qty }) => {
-        return s + (parseFloat((dish.price||'0').replace(/[^0-9.]/g,''))||0) * qty;
-      }, 0);
-    }, 0);
+    let total = 0;
+    Object.values(dayOrders).forEach(periods => {
+      Object.values(periods).forEach(({ items }) => {
+        Object.values(items).forEach(({ dish, qty }) => {
+          total += (parseFloat((dish.price||'0').replace(/[^0-9.]/g,''))||0) * qty;
+        });
+      });
+    });
     totalEl.textContent = `$${total.toFixed(2)}`;
   }
 
   // ── Finish order ──────────────────────────────────────────────────────────
   finishBtn.addEventListener('click', () => {
-    const hasAnyDish = Object.values(nightOrders).some(n => Object.keys(n.items).length > 0);
+    const hasAnyDish = Object.values(dayOrders).some(periods =>
+      Object.values(periods).some(p => Object.keys(p.items).length > 0)
+    );
     if (!hasAnyDish) {
       finishBtn.textContent = 'Select at least one dish';
       setTimeout(() => { finishBtn.textContent = 'Finish Order'; }, 2000);
@@ -843,42 +950,57 @@ function handleContactSubmit(e) {
     let grandTotal = 0;
     const emailLines = [];
 
-    stayNights.forEach(date => {
-      const key = dateKey(date);
-      const { time, items } = nightOrders[key];
-      if (Object.keys(items).length === 0) return;
+    stayDays.forEach(day => {
+      const key = dateKey(day.date);
+      const periods = dayOrders[key];
+      const dayHasItems = Object.values(periods).some(p => Object.keys(p.items).length > 0);
+      if (!dayHasItems) return;
 
       const dateHead = document.createElement('div');
       dateHead.className = 'order-summary-date-head';
-      dateHead.textContent = formatNight(date) + (time ? ` — ${time}` : '');
+      dateHead.textContent = formatDayLabel(day);
       summaryLines.appendChild(dateHead);
 
-      const emailNightLines = [];
-      Object.values(items).forEach(({ dish, qty }) => {
-        const p = parseFloat((dish.price||'0').replace(/[^0-9.]/g,''))||0;
-        const lineTotal = p * qty;
-        grandTotal += lineTotal;
+      const emailPeriodChunks = [];
 
-        const row = document.createElement('div');
-        row.className = 'order-summary-line';
-        const nameEl = document.createElement('span');
-        nameEl.className = 'order-summary-line-name';
-        nameEl.textContent = qty > 1 ? `${dish.title} × ${qty}` : dish.title;
-        const priceEl = document.createElement('span');
-        priceEl.className = 'order-summary-line-price';
-        priceEl.textContent = `$${lineTotal.toFixed(2)}`;
-        row.appendChild(nameEl);
-        row.appendChild(priceEl);
-        summaryLines.appendChild(row);
+      Object.keys(periods).forEach(p => {
+        const { time, items } = periods[p];
+        if (Object.keys(items).length === 0) return;
 
-        emailNightLines.push(`${dish.title}${qty > 1 ? ` x${qty}` : ''} ($${lineTotal.toFixed(2)})`);
+        const periodLabel = document.createElement('div');
+        periodLabel.className = 'order-summary-period-label';
+        periodLabel.textContent = `${MEAL_PERIODS[p].label}${time ? ' — ' + time : ''}`;
+        summaryLines.appendChild(periodLabel);
+
+        const emailItemLines = [];
+        Object.values(items).forEach(({ dish, qty }) => {
+          const price = parseFloat((dish.price||'0').replace(/[^0-9.]/g,''))||0;
+          const lineTotal = price * qty;
+          grandTotal += lineTotal;
+
+          const row = document.createElement('div');
+          row.className = 'order-summary-line';
+          const nameEl = document.createElement('span');
+          nameEl.className = 'order-summary-line-name';
+          nameEl.textContent = qty > 1 ? `${dish.title} × ${qty}` : dish.title;
+          const priceEl = document.createElement('span');
+          priceEl.className = 'order-summary-line-price';
+          priceEl.textContent = `$${lineTotal.toFixed(2)}`;
+          row.appendChild(nameEl);
+          row.appendChild(priceEl);
+          summaryLines.appendChild(row);
+
+          emailItemLines.push(`${dish.title}${qty > 1 ? ` x${qty}` : ''} ($${lineTotal.toFixed(2)})`);
+        });
+
+        emailPeriodChunks.push(`${MEAL_PERIODS[p].label}${time ? ' @ ' + time : ''}: ${emailItemLines.join(', ')}`);
       });
 
-      emailLines.push(`${formatNight(date)}${time ? ' @ ' + time : ''}: ${emailNightLines.join(', ')}`);
+      emailLines.push(`${formatDayLabel(day)} — ${emailPeriodChunks.join(' | ')}`);
     });
 
     summaryTotal.textContent = `$${grandTotal.toFixed(2)}`;
-    hiddenField.value = emailLines.join(' | ') + ` | TOTAL: $${grandTotal.toFixed(2)}`;
+    hiddenField.value = emailLines.join(' || ') + ` || TOTAL: $${grandTotal.toFixed(2)}`;
 
     stepNights.hidden = true;
     summary.hidden = false;
@@ -896,14 +1018,17 @@ function handleContactSubmit(e) {
     return d.toISOString().split('T')[0];
   }
 
-  function formatNight(date, idx) {
-    const label = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    return idx !== undefined ? `Night ${idx + 1} — ${label}` : label;
+  function formatDayLabel(day, idx) {
+    const label = day.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    let tag = '';
+    if (day.isCheckinDay)  tag = ' (Check-in)';
+    else if (day.isCheckoutDay) tag = ' (Check-out)';
+    return idx !== undefined ? `Day ${idx + 1} — ${label}${tag}` : `${label}${tag}`;
   }
 
   function resetAll() {
-    nightOrders  = {};
-    stayNights   = [];
+    dayOrders = {};
+    stayDays  = [];
     hiddenField.value = '';
     checkinEl.value   = '';
     checkoutEl.value  = '';
