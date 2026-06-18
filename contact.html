@@ -72,6 +72,7 @@
             </span>
             I want to request food during my stay
           </label>
+          <p class="order-policy-note">Food orders are prepared fresh to order. Cancellations made more than 48 hours before your first day of stay are fully refundable; cancellations within 48 hours are non-refundable, as ingredients will have already been purchased.</p>
         </div>
 
         <!-- Order panel (hidden until checkbox checked) -->
@@ -147,6 +148,21 @@
         </div>
         <button type="submit" class="contact-submit">Send Message</button>
         <p class="form-note" id="form-note" aria-live="polite"></p>
+
+        <!-- Payment QR codes — shown only after a successful submission -->
+        <div class="payment-qr-wrap" id="payment-qr-wrap" hidden>
+          <p class="payment-qr-label">Scan to Pay</p>
+          <div class="payment-qr-row">
+            <div class="payment-qr-item">
+              <img src="images/payment-zelle.jpg" alt="Zelle payment QR code" class="payment-qr-img" />
+              <span class="payment-qr-caption">Zelle</span>
+            </div>
+            <div class="payment-qr-item">
+              <img src="images/payment-venmo.jpg" alt="Venmo payment QR code" class="payment-qr-img" />
+              <span class="payment-qr-caption">Venmo</span>
+            </div>
+          </div>
+        </div>
       </form>
 
     </div>
