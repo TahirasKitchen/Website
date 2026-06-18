@@ -559,7 +559,6 @@ function handleContactSubmit(e) {
 
   const MAX_NIGHTS = 7;
 
-  // Meal period definitions: hour windows + which hours render in the <select>
   const MEAL_PERIODS = {
     breakfast: { label: 'Breakfast', hours: ['8am','9am','10am'] },
     lunch:     { label: 'Lunch',     hours: ['12pm','1pm','2pm'] },
@@ -570,6 +569,7 @@ function handleContactSubmit(e) {
   // dayOrders: { dateKey: { breakfast: {time:'', items:{}}, lunch:{...}, dinner:{...} } }
   let dayOrders  = {};
   let stayDays   = []; // array of { date: Date, isCheckinDay: bool, isCheckoutDay: bool }
+  let activeDayKey = null; // which day's section is currently expanded (single open at a time)
 
   const todayStr = new Date().toISOString().split('T')[0];
   checkinEl.min  = todayStr;
@@ -629,7 +629,7 @@ function handleContactSubmit(e) {
     calConfirm.disabled = false;
   }
 
-  // ── Confirm dates → build per-day list ──────────────────────────────────
+  // ── Confirm dates → build per-day sections ──────────────────────────────
   calConfirm.addEventListener('click', () => {
     const d1 = new Date(checkinEl.value + 'T00:00:00');
     const d2 = new Date(checkoutEl.value + 'T00:00:00');
@@ -638,7 +638,6 @@ function handleContactSubmit(e) {
     stayDays  = [];
     dayOrders = {};
 
-    // One row per calendar day guest is present: check-in day through check-out day
     for (let i = 0; i <= nights; i++) {
       const d = new Date(d1);
       d.setDate(d1.getDate() + i);
@@ -654,59 +653,63 @@ function handleContactSubmit(e) {
       dayOrders[key] = periods;
     }
 
-    buildDayAccordion();
+    activeDayKey = dateKey(stayDays[0].date);
+    buildDaySections();
     stepDates.hidden  = true;
     stepNights.hidden = false;
   });
 
-  // Which meal periods are offered on a given day
   function availablePeriods(isCheckinDay, isCheckoutDay) {
-    if (isCheckinDay && isCheckoutDay) return ['dinner']; // single-day stay edge case, arrive 3pm leave noon next... shouldn't normally happen
-    if (isCheckinDay)  return ['dinner'];                  // arrive 3pm → dinner only
-    if (isCheckoutDay) return ['breakfast'];                // leave noon → breakfast only
-    return ['breakfast', 'lunch', 'dinner'];                // full day
+    if (isCheckinDay && isCheckoutDay) return ['dinner'];
+    if (isCheckinDay)  return ['dinner'];
+    if (isCheckoutDay) return ['breakfast'];
+    return ['breakfast', 'lunch', 'dinner'];
   }
 
-  // ── Build accordion: one section per day ────────────────────────────────
-  function buildDayAccordion() {
+  // ── Build one section per day — natural flow, no nested max-height ───────
+  function buildDaySections() {
     nightsWrap.innerHTML = '';
 
     stayDays.forEach((day, idx) => {
       const key = dateKey(day.date);
       const periods = availablePeriods(day.isCheckinDay, day.isCheckoutDay);
+      const isActive = key === activeDayKey;
 
       const section = document.createElement('div');
-      section.className = 'night-section';
+      section.className = 'day-section' + (isActive ? ' open' : '');
       section.dataset.key = key;
 
+      // Header (click to expand/collapse this day — plain show/hide, no animation math)
       const header = document.createElement('button');
       header.type = 'button';
-      header.className = 'night-header' + (idx === 0 ? ' open' : '');
-      header.setAttribute('aria-expanded', idx === 0 ? 'true' : 'false');
+      header.className = 'day-header' + (isActive ? ' open' : '');
+      header.setAttribute('aria-expanded', isActive ? 'true' : 'false');
       header.innerHTML = `
-        <span class="night-header-left">
-          <span class="night-date-label">${formatDayLabel(day, idx)}</span>
-          <span class="night-summary-pill" id="pill-${key}"></span>
+        <span class="day-header-left">
+          <span class="day-date-label">${formatDayLabel(day, idx)}</span>
+          <span class="day-summary-pill" id="pill-${key}"></span>
         </span>
-        <span class="night-chevron">
+        <span class="day-chevron">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <polyline points="2,3 5,7 8,3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </span>`;
 
+      // Body — plain block, shown/hidden with [hidden], grows naturally
       const body = document.createElement('div');
-      body.className = 'night-body' + (idx === 0 ? ' open' : '');
-      body.id = `night-body-${key}`;
+      body.className = 'day-body';
+      body.id = `day-body-${key}`;
+      body.hidden = !isActive;
 
-      // Meal period checkboxes
+      // Meal toggle pills
       const mealRow = document.createElement('div');
-      mealRow.className = 'meal-period-row';
+      mealRow.className = 'meal-toggle-row';
       periods.forEach(p => {
-        mealRow.appendChild(buildMealCheckbox(p, key));
+        mealRow.appendChild(buildMealToggle(p, key));
       });
       body.appendChild(mealRow);
 
-      // Container where each checked period's menu gets injected
+      // Where each active period's menu renders — plain stacked divs
       const periodPanelsWrap = document.createElement('div');
       periodPanelsWrap.className = 'meal-period-panels';
       periodPanelsWrap.id = `period-panels-${key}`;
@@ -716,53 +719,37 @@ function handleContactSubmit(e) {
       section.appendChild(body);
       nightsWrap.appendChild(section);
 
-      if (idx === 0) {
-        requestAnimationFrame(() => { body.style.maxHeight = body.scrollHeight + 'px'; });
-      }
-
       header.addEventListener('click', () => {
-        const isOpen = body.classList.contains('open');
-        nightsWrap.querySelectorAll('.night-body').forEach(b => {
-          b.classList.remove('open');
-          b.style.maxHeight = '';
-        });
-        nightsWrap.querySelectorAll('.night-header').forEach(h => {
+        const willOpen = body.hidden;
+        // Collapse all other days
+        nightsWrap.querySelectorAll('.day-body').forEach(b => { b.hidden = true; });
+        nightsWrap.querySelectorAll('.day-header').forEach(h => {
           h.classList.remove('open');
           h.setAttribute('aria-expanded', 'false');
         });
-        if (!isOpen) {
-          body.classList.add('open');
+        if (willOpen) {
+          body.hidden = false;
           header.classList.add('open');
           header.setAttribute('aria-expanded', 'true');
-          requestAnimationFrame(() => { body.style.maxHeight = body.scrollHeight + 'px'; });
+          activeDayKey = key;
         }
       });
     });
   }
 
-  // ── One meal-period checkbox (Breakfast / Lunch / Dinner) ──────────────
-  function buildMealCheckbox(period, dayKey) {
-    const wrap = document.createElement('label');
-    wrap.className = 'meal-period-cb-wrap';
+  // ── Meal toggle pill (Breakfast / Lunch / Dinner) — button, not checkbox ──
+  function buildMealToggle(period, dayKey) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'meal-toggle-pill';
+    btn.id = `meal-${dayKey}-${period}`;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.innerHTML = `<span class="meal-toggle-check">✓</span><span>${MEAL_PERIODS[period].label}</span>`;
 
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.className = 'meal-period-cb';
-    cb.id = `meal-${dayKey}-${period}`;
-
-    const box = document.createElement('span');
-    box.className = 'meal-period-cb-box';
-
-    const text = document.createElement('span');
-    text.className = 'meal-period-cb-label';
-    text.textContent = MEAL_PERIODS[period].label;
-
-    wrap.appendChild(cb);
-    wrap.appendChild(box);
-    wrap.appendChild(text);
-
-    cb.addEventListener('change', () => {
-      if (cb.checked) {
+    btn.addEventListener('click', () => {
+      const isActive = btn.classList.toggle('active');
+      btn.setAttribute('aria-pressed', String(isActive));
+      if (isActive) {
         buildPeriodPanel(period, dayKey);
       } else {
         removePeriodPanel(period, dayKey);
@@ -772,20 +759,18 @@ function handleContactSubmit(e) {
       updateGrandTotal();
     });
 
-    return wrap;
+    return btn;
   }
 
-  // ── Build the dish-list + time panel for one checked period ─────────────
+  // ── Build the dish-list + time panel for one active period ──────────────
   function buildPeriodPanel(period, dayKey) {
     const panelsWrap = document.getElementById(`period-panels-${dayKey}`);
     if (!panelsWrap || document.getElementById(`panel-${dayKey}-${period}`)) return;
-    // placeholder for recalc call appended at end of function (see below)
 
     const panelDiv = document.createElement('div');
     panelDiv.className = 'meal-period-panel';
     panelDiv.id = `panel-${dayKey}-${period}`;
 
-    // Time select scoped to this period's hours
     const timeRow = document.createElement('div');
     timeRow.className = 'night-time-row';
     timeRow.innerHTML = `<span class="night-time-label">${MEAL_PERIODS[period].label} serving time</span>`;
@@ -804,7 +789,6 @@ function handleContactSubmit(e) {
     timeRow.appendChild(timeSelect);
     panelDiv.appendChild(timeRow);
 
-    // Dish list filtered to this meal period
     const ul = document.createElement('ul');
     ul.className = 'order-dish-list night-dish-list';
     const filtered = dishes.filter(d => (d.mealPeriods || []).includes(period));
@@ -829,60 +813,11 @@ function handleContactSubmit(e) {
       updateGrandTotal();
       validateAndStyle(dayKey, period);
     });
-
-    recalcOpenBodyHeight(dayKey);
-    validateAndStyle(dayKey, period);
-  }
-
-  // Checks whether a checked period has BOTH a time AND at least one dish.
-  // Shows an inline warning if only one of the two is set; clears it otherwise.
-  function validateAndStyle(dayKey, period) {
-    const order = dayOrders[dayKey] && dayOrders[dayKey][period];
-    const panel = document.getElementById(`panel-${dayKey}-${period}`);
-    if (!order || !panel) return;
-
-    const hasTime  = !!order.time;
-    const hasItems = Object.keys(order.items).length > 0;
-
-    let warn = panel.querySelector('.meal-period-warning');
-    if ((hasTime && !hasItems) || (!hasTime && hasItems)) {
-      if (!warn) {
-        warn = document.createElement('p');
-        warn.className = 'meal-period-warning';
-        panel.insertBefore(warn, panel.firstChild.nextSibling); // after time row
-      }
-      warn.textContent = hasTime
-        ? 'Please select at least one dish for this time.'
-        : 'Please select a serving time for your selected dish(es).';
-      panel.classList.add('incomplete');
-    } else {
-      if (warn) warn.remove();
-      panel.classList.remove('incomplete');
-    }
-    recalcOpenBodyHeight(dayKey);
-  }
-
-  // Returns true if every checked meal period across every day has both a time and at least one dish
-  function allPeriodsComplete() {
-    let valid = true;
-    Object.entries(dayOrders).forEach(([dayKey, periods]) => {
-      Object.entries(periods).forEach(([period, order]) => {
-        const hasTime  = !!order.time;
-        const hasItems = Object.keys(order.items).length > 0;
-        const isChecked = document.getElementById(`meal-${dayKey}-${period}`)?.checked;
-        if (isChecked && (hasTime !== hasItems)) {
-          valid = false;
-          validateAndStyle(dayKey, period);
-        }
-      });
-    });
-    return valid;
   }
 
   function removePeriodPanel(period, dayKey) {
     const el = document.getElementById(`panel-${dayKey}-${period}`);
     if (el) el.remove();
-    recalcOpenBodyHeight(dayKey);
   }
 
   // ── Build one dish row (scoped to day + period) ─────────────────────────
@@ -963,7 +898,7 @@ function handleContactSubmit(e) {
     return li;
   }
 
-  // ── Pill: compact summary in accordion header ────────────────────────────
+  // ── Pill: compact summary in day header ──────────────────────────────────
   function updatePill(dayKey) {
     const pill = document.getElementById(`pill-${dayKey}`);
     if (!pill) return;
@@ -990,6 +925,49 @@ function handleContactSubmit(e) {
       });
     });
     totalEl.textContent = `$${total.toFixed(2)}`;
+  }
+
+  // ── Validation: a checked period needs BOTH a time AND ≥1 dish ──────────
+  function validateAndStyle(dayKey, period) {
+    const order = dayOrders[dayKey] && dayOrders[dayKey][period];
+    const panelEl = document.getElementById(`panel-${dayKey}-${period}`);
+    if (!order || !panelEl) return;
+
+    const hasTime  = !!order.time;
+    const hasItems = Object.keys(order.items).length > 0;
+
+    let warn = panelEl.querySelector('.meal-period-warning');
+    if ((hasTime && !hasItems) || (!hasTime && hasItems)) {
+      if (!warn) {
+        warn = document.createElement('p');
+        warn.className = 'meal-period-warning';
+        panelEl.insertBefore(warn, panelEl.children[1] || null);
+      }
+      warn.textContent = hasTime
+        ? 'Please select at least one dish for this time.'
+        : 'Please select a serving time for your selected dish(es).';
+      panelEl.classList.add('incomplete');
+    } else {
+      if (warn) warn.remove();
+      panelEl.classList.remove('incomplete');
+    }
+  }
+
+  function allPeriodsComplete() {
+    let valid = true;
+    Object.entries(dayOrders).forEach(([dayKey, periods]) => {
+      Object.entries(periods).forEach(([period, order]) => {
+        const hasTime  = !!order.time;
+        const hasItems = Object.keys(order.items).length > 0;
+        const toggleBtn = document.getElementById(`meal-${dayKey}-${period}`);
+        const isActive = toggleBtn && toggleBtn.classList.contains('active');
+        if (isActive && (hasTime !== hasItems)) {
+          valid = false;
+          validateAndStyle(dayKey, period);
+        }
+      });
+    });
+    return valid;
   }
 
   // ── Finish order ──────────────────────────────────────────────────────────
@@ -1083,17 +1061,6 @@ function handleContactSubmit(e) {
     return d.toISOString().split('T')[0];
   }
 
-  // Recalculate an open accordion body's max-height to fit its actual content.
-  // Called whenever a meal panel is added/removed inside an open day.
-  function recalcOpenBodyHeight(dayKey) {
-    const body = document.getElementById(`night-body-${dayKey}`);
-    if (!body || !body.classList.contains('open')) return;
-    // Reset then measure on next frame so the browser has laid out new children
-    body.style.maxHeight = 'none';
-    const h = body.scrollHeight;
-    body.style.maxHeight = h + 'px';
-  }
-
   function formatDayLabel(day, idx) {
     const label = day.date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     let tag = '';
@@ -1105,6 +1072,7 @@ function handleContactSubmit(e) {
   function resetAll() {
     dayOrders = {};
     stayDays  = [];
+    activeDayKey = null;
     hiddenField.value = '';
     checkinEl.value   = '';
     checkoutEl.value  = '';
