@@ -569,7 +569,8 @@ function handleContactSubmit(e) {
   // dayOrders: { dateKey: { breakfast: {time:'', items:{}}, lunch:{...}, dinner:{...} } }
   let dayOrders  = {};
   let stayDays   = []; // array of { date: Date, isCheckinDay: bool, isCheckoutDay: bool }
-  let activeDayKey = null; // which day's section is currently expanded (single open at a time)
+  let activeDayKey = null;       // which day's section is currently expanded (single open at a time)
+  let visiblePeriod = {};        // { dateKey: 'breakfast' | 'lunch' | 'dinner' | null } — which meal panel shows per day
 
   const todayStr = new Date().toISOString().split('T')[0];
   checkinEl.min  = todayStr;
@@ -651,6 +652,7 @@ function handleContactSubmit(e) {
         periods[p] = { time: '', items: {} };
       });
       dayOrders[key] = periods;
+      visiblePeriod[key] = null;
     }
 
     activeDayKey = dateKey(stayDays[0].date);
@@ -737,7 +739,10 @@ function handleContactSubmit(e) {
     });
   }
 
-  // ── Meal toggle pill (Breakfast / Lunch / Dinner) — button, not checkbox ──
+  // ── Meal toggle pill (Breakfast / Lunch / Dinner) ────────────────────────
+  // Single panel visible per day at a time. Clicking a pill swaps which
+  // meal's menu is shown, but never erases data for the meal being hidden —
+  // dayOrders keeps every period's selections regardless of visibility.
   function buildMealToggle(period, dayKey) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -747,14 +752,18 @@ function handleContactSubmit(e) {
     btn.innerHTML = `<span class="meal-toggle-check">✓</span><span>${MEAL_PERIODS[period].label}</span>`;
 
     btn.addEventListener('click', () => {
-      const isActive = btn.classList.toggle('active');
-      btn.setAttribute('aria-pressed', String(isActive));
-      if (isActive) {
-        buildPeriodPanel(period, dayKey);
+      const wasVisible = visiblePeriod[dayKey] === period;
+
+      if (wasVisible) {
+        // Clicking the already-open pill just closes its panel (data retained)
+        visiblePeriod[dayKey] = null;
+        hidePeriodPanel(dayKey);
       } else {
-        removePeriodPanel(period, dayKey);
-        dayOrders[dayKey][period] = { time: '', items: {} };
+        // Switch to this period's panel; whatever was open before just hides
+        visiblePeriod[dayKey] = period;
+        showPeriodPanel(period, dayKey);
       }
+      refreshPillStates(dayKey);
       updatePill(dayKey);
       updateGrandTotal();
     });
@@ -762,12 +771,41 @@ function handleContactSubmit(e) {
     return btn;
   }
 
-  // ── Build the dish-list + time panel for one active period ──────────────
-  function buildPeriodPanel(period, dayKey) {
-    const panelsWrap = document.getElementById(`period-panels-${dayKey}`);
-    if (!panelsWrap || document.getElementById(`panel-${dayKey}-${period}`)) return;
+  // Visually mark which pill is "active" (panel currently showing) for a day.
+  // A pill also gets a subtle "filled" indicator if it has saved selections,
+  // even while a different pill's panel is the one currently visible.
+  function refreshPillStates(dayKey) {
+    Object.keys(dayOrders[dayKey] || {}).forEach(period => {
+      const btn = document.getElementById(`meal-${dayKey}-${period}`);
+      if (!btn) return;
+      const isVisible = visiblePeriod[dayKey] === period;
+      const order = dayOrders[dayKey][period];
+      const hasData = order && Object.keys(order.items).length > 0;
+      btn.classList.toggle('active', isVisible);
+      btn.classList.toggle('has-data', hasData && !isVisible);
+      btn.setAttribute('aria-pressed', String(isVisible));
+    });
+  }
 
-    const panelDiv = document.createElement('div');
+  // ── Show the dish-list + time panel for one period ──────────────────────
+  // Panels are built once and cached in the DOM (hidden, not removed) so that
+  // dish checkboxes / quantities survive switching between meal periods.
+  function showPeriodPanel(period, dayKey) {
+    const panelsWrap = document.getElementById(`period-panels-${dayKey}`);
+    if (!panelsWrap) return;
+
+    // Hide any other period panel for this day first
+    panelsWrap.querySelectorAll('.meal-period-panel').forEach(p => { p.hidden = true; });
+
+    let panelDiv = document.getElementById(`panel-${dayKey}-${period}`);
+    if (panelDiv) {
+      // Already built — just reveal it, selections are already intact
+      panelDiv.hidden = false;
+      return;
+    }
+
+    // First time this period is opened for this day — build it
+    panelDiv = document.createElement('div');
     panelDiv.className = 'meal-period-panel';
     panelDiv.id = `panel-${dayKey}-${period}`;
 
@@ -815,9 +853,10 @@ function handleContactSubmit(e) {
     });
   }
 
-  function removePeriodPanel(period, dayKey) {
-    const el = document.getElementById(`panel-${dayKey}-${period}`);
-    if (el) el.remove();
+  function hidePeriodPanel(dayKey) {
+    const panelsWrap = document.getElementById(`period-panels-${dayKey}`);
+    if (!panelsWrap) return;
+    panelsWrap.querySelectorAll('.meal-period-panel').forEach(p => { p.hidden = true; });
   }
 
   // ── Build one dish row (scoped to day + period) ─────────────────────────
@@ -880,6 +919,7 @@ function handleContactSubmit(e) {
       updatePill(dayKey);
       updateGrandTotal();
       validateAndStyle(dayKey, period);
+      refreshPillStates(dayKey);
     };
 
     cb.addEventListener('change', update);
@@ -1073,6 +1113,7 @@ function handleContactSubmit(e) {
     dayOrders = {};
     stayDays  = [];
     activeDayKey = null;
+    visiblePeriod = {};
     hiddenField.value = '';
     checkinEl.value   = '';
     checkoutEl.value  = '';
