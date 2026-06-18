@@ -556,6 +556,7 @@ function handleContactSubmit(e) {
   const nightsWrap  = document.getElementById('order-nights-wrap');
   const totalEl     = document.getElementById('order-total-value');
   const finishBtn   = document.getElementById('order-finish-btn');
+  const validationHint = document.getElementById('order-validation-hint');
 
   const MAX_NIGHTS = 7;
 
@@ -990,24 +991,64 @@ function handleContactSubmit(e) {
     } else {
       if (warn) warn.remove();
       panelEl.classList.remove('incomplete');
+      // If nothing else is incomplete, clear the global hint message
+      if (validationHint && validationHint.classList.contains('visible')) {
+        const stillIncomplete = Object.entries(dayOrders).some(([dk, periods]) =>
+          Object.entries(periods).some(([p, o]) => !!o.time !== (Object.keys(o.items).length > 0))
+        );
+        if (!stillIncomplete) {
+          validationHint.textContent = '';
+          validationHint.classList.remove('visible');
+        }
+      }
     }
   }
 
+  // Checks every meal period across every day, regardless of which panel is
+  // currently visible (a period the guest filled in and then switched away
+  // from must still be validated — "active" pill class only reflects
+  // visibility, not whether the guest engaged with that meal).
   function allPeriodsComplete() {
     let valid = true;
     Object.entries(dayOrders).forEach(([dayKey, periods]) => {
       Object.entries(periods).forEach(([period, order]) => {
         const hasTime  = !!order.time;
         const hasItems = Object.keys(order.items).length > 0;
-        const toggleBtn = document.getElementById(`meal-${dayKey}-${period}`);
-        const isActive = toggleBtn && toggleBtn.classList.contains('active');
-        if (isActive && (hasTime !== hasItems)) {
+        // Both blank = guest doesn't want this meal, totally fine.
+        // Both set = complete, fine.
+        // Exactly one set = incomplete, block submission.
+        if (hasTime !== hasItems) {
           valid = false;
-          validateAndStyle(dayKey, period);
+          flagIncompletePeriod(dayKey, period);
         }
       });
     });
     return valid;
+  }
+
+  // Marks a day's pill + (if built) panel as incomplete, and opens that
+  // day/period so the guest can immediately see and fix what's missing.
+  function flagIncompletePeriod(dayKey, period) {
+    // Make sure the panel exists and is visible so the warning is seen
+    if (visiblePeriod[dayKey] !== period) {
+      visiblePeriod[dayKey] = period;
+      showPeriodPanel(period, dayKey);
+      refreshPillStates(dayKey);
+    }
+    // Expand the day section itself if it's collapsed
+    const body = document.getElementById(`day-body-${dayKey}`);
+    const header = document.querySelector(`.day-section[data-key="${dayKey}"] .day-header`);
+    if (body && body.hidden) {
+      document.querySelectorAll('.day-body').forEach(b => { b.hidden = true; });
+      document.querySelectorAll('.day-header').forEach(h => {
+        h.classList.remove('open');
+        h.setAttribute('aria-expanded', 'false');
+      });
+      body.hidden = false;
+      if (header) { header.classList.add('open'); header.setAttribute('aria-expanded', 'true'); }
+      activeDayKey = dayKey;
+    }
+    validateAndStyle(dayKey, period);
   }
 
   // ── Finish order ──────────────────────────────────────────────────────────
@@ -1021,9 +1062,21 @@ function handleContactSubmit(e) {
       return;
     }
     if (!allPeriodsComplete()) {
-      finishBtn.textContent = 'Please complete highlighted meals';
-      setTimeout(() => { finishBtn.textContent = 'Finish Order'; }, 2500);
+      finishBtn.textContent = 'Please check your meal times & dishes';
+      finishBtn.classList.add('finish-btn-warning');
+      if (validationHint) {
+        validationHint.textContent = 'Please go back and check the days you\u2019re staying \u2014 select a time if you chose a dish (or a dish if you chose a time) for each meal you want served.';
+        validationHint.classList.add('visible');
+      }
+      setTimeout(() => {
+        finishBtn.textContent = 'Finish Order';
+        finishBtn.classList.remove('finish-btn-warning');
+      }, 3200);
       return;
+    }
+    if (validationHint) {
+      validationHint.textContent = '';
+      validationHint.classList.remove('visible');
     }
     showSummary();
   });
@@ -1124,6 +1177,10 @@ function handleContactSubmit(e) {
     stepNights.hidden = true;
     stepDates.hidden  = false;
     if (totalEl) totalEl.textContent = '$0';
+    if (validationHint) {
+      validationHint.textContent = '';
+      validationHint.classList.remove('visible');
+    }
   }
 
 })();
