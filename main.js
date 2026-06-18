@@ -592,6 +592,8 @@ function handleContactSubmit(e) {
   // ── Date inputs ───────────────────────────────────────────────────────────
   checkinEl.addEventListener('change', validateDates);
   checkoutEl.addEventListener('change', validateDates);
+  checkinEl.addEventListener('input', validateDates);
+  checkoutEl.addEventListener('input', validateDates);
 
   function validateDates() {
     calHint.textContent = '';
