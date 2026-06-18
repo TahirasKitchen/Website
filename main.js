@@ -522,7 +522,9 @@ function handleContactSubmit(e) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      note.textContent = '✦ Thank you — your message has been received.';
+      note.textContent = hadFoodOrder
+        ? '✦ Thank you — your message has been received. Scan the QR code below to pay for your order.'
+        : '✦ Thank you — your message has been received.';
       note.style.color = '';
       form.reset();
       if (qrWrap && hadFoodOrder) qrWrap.hidden = false;
