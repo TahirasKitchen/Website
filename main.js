@@ -500,9 +500,15 @@ function handleContactSubmit(e) {
   const note = document.getElementById('form-note');
   const btn  = e.target.querySelector('.contact-submit');
   const form = e.target;
+  const qrWrap = document.getElementById('payment-qr-wrap');
+
+  // Capture whether a food order was placed BEFORE form.reset() clears it
+  const foodOrderField = document.getElementById('food-order-hidden');
+  const hadFoodOrder = !!(foodOrderField && foodOrderField.value.trim().length > 0);
 
   btn.textContent = 'Sending…';
   btn.disabled = true;
+  if (qrWrap) qrWrap.hidden = true;
 
   const data = new FormData(form);
   data.append('access_key', '954e1a30-859f-419a-9e52-ee39890f1374');
@@ -517,7 +523,9 @@ function handleContactSubmit(e) {
   .then(data => {
     if (data.success) {
       note.textContent = '✦ Thank you — your message has been received.';
+      note.style.color = '';
       form.reset();
+      if (qrWrap && hadFoodOrder) qrWrap.hidden = false;
     } else {
       note.textContent = 'Something went wrong. Please email us directly at TahirasKitchen2026@gmail.com';
       note.style.color = '#e88';
