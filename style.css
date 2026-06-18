@@ -1532,14 +1532,14 @@ ul[role="list"] { list-style: none; }
 }
 
 /* ── Per-night accordion ──────────────────────────────────────────────────── */
-.night-section {
+.day-section {
   border: 1px solid rgba(201,168,76,0.15);
   border-top: none;
 }
 
-.night-section:first-child { border-top: 1px solid rgba(201,168,76,0.15); }
+.day-section:first-child { border-top: 1px solid rgba(201,168,76,0.15); }
 
-.night-header {
+.day-header {
   width: 100%;
   display: flex;
   align-items: center;
@@ -1557,25 +1557,25 @@ ul[role="list"] { list-style: none; }
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.night-header:hover,
-.night-header.open {
+.day-header:hover,
+.day-header.open {
   background: rgba(201,168,76,0.07);
   color: var(--white);
 }
 
-.night-header-left {
+.day-header-left {
   display: flex;
   align-items: center;
   gap: 0.65rem;
   min-width: 0;
 }
 
-.night-date-label {
+.day-date-label {
   font-weight: 500;
   white-space: nowrap;
 }
 
-.night-summary-pill {
+.day-summary-pill {
   font-size: 0.65rem;
   letter-spacing: 0.1em;
   color: var(--gold);
@@ -1585,25 +1585,21 @@ ul[role="list"] { list-style: none; }
   text-overflow: ellipsis;
 }
 
-.night-chevron {
+.day-chevron {
   flex-shrink: 0;
   color: var(--gold);
   transition: transform 0.3s ease;
 }
 
-.night-header.open .night-chevron { transform: rotate(180deg); }
+.day-header.open .day-chevron { transform: rotate(180deg); }
 
-.night-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+/* Body: plain block shown/hidden via [hidden] attribute — no height animation,
+   grows naturally with however many meal panels are active. */
+.day-body {
   background: rgba(0,0,0,0.15);
 }
 
-.night-body.open {
-  overflow-y: visible;
-  /* max-height is set inline via JS to match actual content height */
-}
+.day-body[hidden] { display: none; }
 
 .night-time-row {
   display: flex;
@@ -2410,71 +2406,54 @@ ul[role="list"] { list-style: none; }
 }
 
 
-/* ── Meal period checkboxes ───────────────────────────────────────────────── */
-.meal-period-row {
+/* ── Meal toggle pills (tab-style, multi-select) ─────────────────────────── */
+.meal-toggle-row {
   display: flex;
-  gap: 1.25rem;
-  padding: 0.85rem 1.1rem;
+  gap: 0.6rem;
+  padding: 0.9rem 1.1rem;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   flex-wrap: wrap;
 }
 
-.meal-period-cb-wrap {
-  display: flex;
+.meal-toggle-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
+  padding: 0.45rem 0.95rem;
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--white-dim);
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
   cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   user-select: none;
 }
 
-.meal-period-cb {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.meal-period-cb-box {
-  display: block;
-  width: 15px;
-  height: 15px;
-  border: 1px solid rgba(201,168,76,0.35);
-  background: transparent;
-  position: relative;
-  flex-shrink: 0;
-  transition: background 0.18s ease, border-color 0.18s ease;
-}
-
-.meal-period-cb:checked ~ .meal-period-cb-box {
-  background: var(--gold);
+.meal-toggle-pill:hover {
   border-color: var(--gold);
-}
-
-.meal-period-cb:checked ~ .meal-period-cb-box::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 0.5px;
-  width: 6px;
-  height: 9px;
-  border: 1.5px solid var(--black);
-  border-top: none;
-  border-left: none;
-  transform: rotate(45deg);
-}
-
-.meal-period-cb-label {
-  font-size: 0.78rem;
-  color: var(--white-dim);
-  font-weight: 400;
-  transition: color 0.18s ease;
-}
-
-.meal-period-cb:checked ~ .meal-period-cb-label {
   color: var(--white);
 }
 
-/* ── Panels that appear per checked meal period ──────────────────────────── */
+.meal-toggle-pill.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--black);
+  font-weight: 500;
+}
+
+.meal-toggle-check {
+  display: none;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.meal-toggle-pill.active .meal-toggle-check {
+  display: inline;
+}
+
+/* ── Panels that appear per active meal period ───────────────────────────── */
 .meal-period-panels { }
 
 .meal-period-panel {
@@ -2488,6 +2467,7 @@ ul[role="list"] { list-style: none; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+
 .order-summary-period-label {
   font-size: 0.65rem;
   letter-spacing: 0.1em;
@@ -2499,7 +2479,7 @@ ul[role="list"] { list-style: none; }
 }
 
 @media (max-width: 640px) {
-  .meal-period-row { gap: 1rem; padding: 0.75rem 1rem; }
+  .meal-toggle-row { gap: 0.5rem; padding: 0.75rem 1rem; }
 }
 
 /* ── Incomplete meal period warning ──────────────────────────────────────── */
