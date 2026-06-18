@@ -2545,3 +2545,67 @@ ul[role="list"] { list-style: none; }
   border-color: #e88;
   color: #e88;
 }
+
+/* ── Order cancellation policy note ──────────────────────────────────────── */
+.order-policy-note {
+  font-size: 0.74rem;
+  color: var(--white-dim);
+  font-style: italic;
+  line-height: 1.6;
+  margin-top: 0.6rem;
+  opacity: 0.85;
+}
+
+/* ── Post-submit payment QR codes ────────────────────────────────────────── */
+.payment-qr-wrap {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(201,168,76,0.15);
+  text-align: center;
+}
+
+.payment-qr-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.payment-qr-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.payment-qr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.payment-qr-img {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  background: var(--white);
+  padding: 0.6rem;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+
+.payment-qr-caption {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .payment-qr-row { gap: 1.5rem; }
+  .payment-qr-img { width: 130px; height: 130px; }
+}
