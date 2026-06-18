@@ -1828,6 +1828,17 @@ ul[role="list"] { list-style: none; }
 
 .footer-mark { color: var(--gold); font-size: 1rem; opacity: 0.6; }
 
+.footer-email-link {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 500;
+  transition: color var(--transition);
+}
+
+.footer-email-link:hover { color: var(--gold-bright); }
+
 .site-footer p {
   font-family: var(--font-italic);
   font-style: italic;
