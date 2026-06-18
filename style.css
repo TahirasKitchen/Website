@@ -2443,6 +2443,22 @@ ul[role="list"] { list-style: none; }
   font-weight: 500;
 }
 
+/* Pill has saved dish selections but its panel isn't the one currently showing */
+.meal-toggle-pill.has-data {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+.meal-toggle-pill.has-data::after {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-left: 0.3rem;
+}
+
 .meal-toggle-check {
   display: none;
   font-size: 0.7rem;
